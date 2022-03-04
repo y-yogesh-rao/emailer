@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
                 autoIncrement: true,
                 allowNull: false
             },
-            inUse: { type: DataTypes.TINYINT, defaultValue: 0 },
+            inUse: { type: DataTypes.INTEGER, defaultValue: 0 },
             path: { type: DataTypes.STRING, defaultValue: null },
             userId: { type: DataTypes.INTEGER, defaultValue: null },
             uniqueName: { type: DataTypes.STRING, allowNull: false },

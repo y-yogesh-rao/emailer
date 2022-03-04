@@ -4,7 +4,7 @@
   "description": "Online stock learning & earning",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -40,7 +40,10 @@
     "ngrok": "^4.1.0",
     "node-csv": "^0.1.2",
     "nodemailer": "^6.5.0",
+    "nodemon": "^2.0.15",
     "path": "^0.12.7",
+    "pg": "^8.7.3",
+    "pg-hstore": "^2.3.4",
     "read-excel-file": "^5.1.0",
     "request": "^2.88.2",
     "sequelize": "^6.6.2",
