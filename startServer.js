@@ -1,6 +1,6 @@
 const server = new Hapi.server({
   host: process.env.NODE_HOST,
-  port: process.env.NODE_PORT,
+  port: process.env.PORT || process.env.NODE_PORT,
   routes: {
     cors: {
       origin: ['*'],
