@@ -1,0 +1,52 @@
+{
+  "name": "investler",
+  "version": "1.0.0",
+  "description": "Online stock learning & earning",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/illuminzcode/yoga.git"
+  },
+  "keywords": [
+    "investler"
+  ],
+  "author": "illuminz",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/boom": "^9.1.2",
+    "@hapi/hapi": "^20.1.2",
+    "@hapi/inert": "^6.0.3",
+    "@hapi/vision": "^6.0.1",
+    "bcrypt": "^5.0.1",
+    "bluebird": "^3.7.2",
+    "dotenv": "^8.2.0",
+    "fs": "0.0.1-security",
+    "handlebars": "^4.7.7",
+    "hapi-auth-jwt2": "^10.2.0",
+    "hapi-auto-route": "^3.0.4",
+    "hapi-cron": "^1.1.0",
+    "hapi-i18n": "^3.0.1",
+    "hapi-swagger": "^14.1.0",
+    "http": "^0.0.1-security",
+    "joi": "^17.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "md5": "^2.3.0",
+    "moment": "^2.29.1",
+    "mysql2": "^2.2.5",
+    "ngrok": "^4.1.0",
+    "node-csv": "^0.1.2",
+    "nodemailer": "^6.5.0",
+    "path": "^0.12.7",
+    "read-excel-file": "^5.1.0",
+    "request": "^2.88.2",
+    "sequelize": "^6.6.2",
+    "sharp": "^0.28.3",
+    "slug": "^5.1.0",
+    "striptags": "^3.2.0",
+    "uuid": "^8.3.2"
+  }
+}
