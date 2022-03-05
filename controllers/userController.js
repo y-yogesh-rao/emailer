@@ -2,7 +2,6 @@ const getLoginData = async (userId,roleId) => {
     let Permissions=[];
     let userProfile = {};
     let userRolePermissions={};
-    console.log('user ****', userId, roleId)
     userProfile = await Models.UserProfile.findOne({attributes:["firstName","lastName","attachmentId","gender","dob"],where:{userId},include:[{attributes:['uniqueName','path'],model:Models.Attachment}]});
     userRolePermissions =  await Models.Role.findOne({attributes:["id","name"],where:{id:roleId},include:[{attributes:["permissionCode"],model:Models.Permission,required:false}]});
     if(userRolePermissions) {
@@ -81,46 +80,14 @@ exports.listUsers = async (req,h) => {
 
 exports.getUserDetails = async (req,h) => {
     try {
-        const user_id = req.auth.credentials.userData.User.id;
-        const roles = req.auth.credentials.userData.User.Roles.map(role=>role.id);
+        const userId = req.auth.credentials.userData.User.id;
+        const userExists = await Models.User.findOne({
+            where:{id:userId},
+            include:[{model:Models.Role,attributes:['id','name']}],
+            attributes:["id","email","status","roleId","accountId","phoneNumber"],
+        });
 
-        let responseData={};
-        let includeArray=[
-            {model:Models.Role,through:{attributes:[]}},
-            {model:Models.Address,attributes:{exclude:['deletedAt']}},
-            {model:Models.UserCertificate,attributes:{exclude:['deletedAt','updatedAt','userId']},include:[
-                {model:Models.Attachment,attributes:['id','path']},
-                {model:Models.Certificate,attributes:{exclude:['deletedAt','updatedAt','id']}}
-            ]}
-        ]
-
-        roles.includes(Constants.USER_TYPES.DRIVER)
-            ? includeArray.push({model:Models.DriverProfile,attributes:{exclude:['deletedAt','updatedAt','user_id']},include:[
-                {model:Models.Attachment,attributes:['id','path']},
-                {model:Models.StaticDropDownContent,as:'EthnicOrigin',attributes:['id','name']},
-                {model:Models.StaticDropDownContent,as:'DriverClass',attributes:['id','name']},
-                {model:Models.StaticDropDownContent,as:'Endorsement',attributes:['id','name']},
-            ]})
-            : includeArray.push({model:Models.UserProfile,attributes:{exclude:['deletedAt','updatedAt','user_id']},include:[
-                {model:Models.Attachment,attributes:['id','path']},
-                {model:Models.StaticDropDownContent,as:'EthnicOrigin',attributes:['id','name']},
-            ]})
-        
-        
-        responseData = await Models.User.findOne({where:{id:user_id},include:includeArray,attributes:{exclude:['password','deletedAt']}})
-        if(responseData.DriverProfile) {
-            responseData.DriverProfile.dataValues.email = responseData.dataValues.email;
-        } else {
-            responseData.UserProfile.dataValues.email = responseData.dataValues.email;
-            if(responseData?.UserProfile?.Attachment) {
-                responseData.UserProfile.Attachment.dataValues.baseUrl = process.env.NODE_SERVER_PUBLIC_API;
-            }
-        }
-        if(responseData?.DriverProfile?.Attachment) {
-            responseData.DriverProfile.Attachment.dataValues.baseUrl = process.env.NODE_SERVER_PUBLIC_API;
-        }
-        responseData.dataValues.UserProfile = responseData.DriverProfile !== undefined ? responseData.DriverProfile : responseData.UserProfile;
-
+        let responseData = userExists ? await loginAction(userExists) : null;
         return h.response({success:true,message:req.i18n.__('REQUEST_SUCCESSFUL'),responseData:responseData}).code(200);
     } catch (error) {
         console.log(error);

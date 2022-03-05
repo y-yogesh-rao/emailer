@@ -73,7 +73,7 @@ module.exports = [
 			tags: ["api", "User"],
 			notes: "Endpoint to get user details",
 			description: "Get User Details",
-			auth: {strategy:'jwt',scope:['admin','driver','broker','company','trucker']},
+			auth: {strategy:'jwt',scope:['admin','user']},
 			validate: {
 				headers: Joi.object(Common.headers(true)).options({
 					allowUnknown: true
