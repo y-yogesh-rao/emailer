@@ -81,7 +81,8 @@ exports.initializeSystem = async (req,h) => {
         ]
         await Models.Permission.bulkCreate(permissionCodes,{transaction:transaction});
 
-        const adminUser = await Models.User.findOne({where:{id:1}});
+        const adminRole = await Models.Role.findOne({where:{id:1}});
+        await adminRole.setPermissions([1,2,3,4],{transaction:transaction});
 
         await transaction.commit();
         return h.response({success:true,message:'SYSTEM_INITIALIZED_SUCCESSFULLY',responseData:{}}).code(200);
