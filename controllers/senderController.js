@@ -5,7 +5,7 @@ exports.createSender = async (req,h) => {
         const accountId = createdById;
         const lastUpdatedById = createdById;
 
-        let {senderEmail,senderName,replyTo,city,state,postalCode,companyName,companyAddressLine_1,companyAddressLine_2} = req.payload;
+        let {senderEmail,senderName,replyTo,country,city,state,postalCode,companyName,companyAddressLine_1,companyAddressLine_2} = req.payload;
         const senderExists = await Models.Sender.findOne({where:{senderEmail}});
         if(senderExists) {
             await transaction.rollback();
@@ -13,7 +13,7 @@ exports.createSender = async (req,h) => {
         }
 
         const createdSender = await Models.Sender.create({
-            createdById,accountId,lastUpdatedById,senderEmail,senderName,replyTo,city,state,postalCode,companyName,companyAddressLine_1,companyAddressLine_2
+            createdById,accountId,lastUpdatedById,senderEmail,senderName,country,replyTo,city,state,postalCode,companyName,companyAddressLine_1,companyAddressLine_2
         },{transaction:transaction});
 
         await transaction.commit();
@@ -40,6 +40,7 @@ exports.updateSender = async (req,h) => {
         let updationObject={lastUpdatedById};
         if(req.payload.city !== null) updationObject['city']=req.payload.city;
         if(req.payload.state !== null) updationObject['state']=req.payload.state;
+        if(req.payload.country !== null) updationObject['country']=req.payload.country;
         if(req.payload.replyTo !== null) updationObject['replyTo']=req.payload.replyTo;
         if(req.payload.postalCode !== null) updationObject['postalCode']=req.payload.postalCode;
         if(req.payload.senderName !== null) updationObject['senderName']=req.payload.senderName;

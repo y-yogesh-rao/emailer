@@ -84,6 +84,12 @@ exports.initializeSystem = async (req,h) => {
         const adminRole = await Models.Role.findOne({where:{id:1}});
         await adminRole.setPermissions([1,2,3,4],{transaction:transaction});
 
+        // --------------------------------------------- CREATING RECIPIENT TYPES ------------------------------------------
+
+        await Models.RecipientType.bulkCreate([
+            {createdById:1,lastUpdatedById:1,name:'Global'}
+        ],{transaction:transaction});
+
         await transaction.commit();
         return h.response({success:true,message:'SYSTEM_INITIALIZED_SUCCESSFULLY',responseData:{}}).code(200);
     } catch (error) {

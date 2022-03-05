@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         lastUpdatedById: { type: DataTypes.INTEGER, defaultValue: null },
         city: { type: DataTypes.STRING, allowNull: false },
         state: { type: DataTypes.STRING, defaultValue: null },
+        country: { type: DataTypes.STRING, allowNull: false },
         replyTo: { type: DataTypes.STRING, defaultValue: null },
         senderName: { type: DataTypes.STRING, allowNull: false },
         postalCode: { type: DataTypes.STRING, allowNull: false },
