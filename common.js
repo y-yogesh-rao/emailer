@@ -197,7 +197,7 @@ exports.sendEmail = async (to, from, cc, bcc, subject, content, replacements, at
           var templateToSend = handlebars.compile(mergeContent);
           var htmlToSend = templateToSend(replacements);
           let mailOptions = {
-            from: ['yogesh@illuminz.com'], // sender address
+            from: from, // sender address
             to: sendto, // list of receivers
             cc:cc.join(','),
             bcc:bcc.join(','),
