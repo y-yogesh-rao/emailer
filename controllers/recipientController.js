@@ -98,9 +98,6 @@ exports.deleteRecipient = async (req,h) => {
             await transaction.rollback();
             return h.response({success:false,message:req.i18n.__('RECIPIENT_NOT_FOUND'),responseData:{}}).code(400);
         }
-
-        const updatedEmail = `${recipientExists.recipientEmail}_ARCHIVED_${Moment().valueOf()}`;
-        await recipientExists.update({recipientEmail:updatedEmail},{transaction:transaction});
         
         const deletedSender = await recipientExists.destroy({where:{id:recipientId}},{transaction:transaction});
         await transaction.commit();

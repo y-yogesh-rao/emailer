@@ -34,16 +34,6 @@ const getTokenStatus = async (userId) =>{
 	return data;
 };
 
-exports.formatListingWithPagination = async (record) => {
-  return {
-    dataCount: record.count,
-    data: record.rows,
-    totalPages: Math.ceil(record.count / Constants.PAGINATION_LIMIT),
-    perPage: Constants.PAGINATION_LIMIT,
-    baseUrl: process.env.NODE_SERVER_PUBLIC_API
-  }
-}
-
 exports.prefunction = (req,h) => {
   global.LanguageCodes = process.env.ALL_LANGUAGE_CODE.split(',');
   global.LanguageIds = process.env.ALL_LANGUAGE_ID.split(',').map(function(item) {
@@ -68,37 +58,6 @@ exports.routeError = (errors, message) => {
       }
     })
     return errors
-}
-
-exports.getGoogleResponce = async (origin,destination) => {
-  try {
-    var options = {
-      method: 'GET',
-      url: Constants.GOOGLE_DIRECTIONS,
-      headers: { 'Content-Type': 'application/json' }
-    };
-
-    return new Promise((resolve) => {
-      options.qs = {key: process.env.GOOGLE_API_KEY,travelMode: 'DRIVING',origin,destination}
-      request(options, (error, response, body) => {
-        let formattedObject = {distanceText:null,distanceInMeters:null,avgTimeText:null,avgTimeSec:null}
-        if(error) return resolve(formattedObject);
-
-        let responseData = JSON.parse(body)
-        if(responseData.status === 'ZERO_RESULTS') return resolve(formattedObject)
-
-        const routeDetails = responseData.routes[0].legs[0];
-        formattedObject.distanceText = routeDetails.distance.text;
-        formattedObject.distanceInMeters = routeDetails.distance.value;
-        formattedObject.avgTimeText = routeDetails.duration.text;
-        formattedObject.avgTimeSec = routeDetails.duration.value;
-        resolve(formattedObject);
-      });
-    });
-  } catch (error) {
-    console.log(error);
-    return {distanceText:null,distanceInMeters:null,avgTimeText:null,avgTimeSec:null};
-  }
 }
 
 // Function to fomrat minutes into the required format
@@ -213,7 +172,7 @@ exports.sendOTP = async (mobile) => {
     return{mobile:mobile,pinId:9999}
 }
 
-exports.sendEamil = async (to, from, cc, bcc, subject, content, replacements, attachments, language, template) => {
+exports.sendEmail = async (to, from, cc, bcc, subject, content, replacements, attachments, language, template) => {
   let protocol = process.env.EMAIL_PROTOCOL;
   switch(protocol){
     case 'smtp':
@@ -238,7 +197,7 @@ exports.sendEamil = async (to, from, cc, bcc, subject, content, replacements, at
           var templateToSend = handlebars.compile(mergeContent);
           var htmlToSend = templateToSend(replacements);
           let mailOptions = {
-            from: from, // sender address
+            from: ['yogesh@illuminz.com'], // sender address
             to: sendto, // list of receivers
             cc:cc.join(','),
             bcc:bcc.join(','),
@@ -248,6 +207,7 @@ exports.sendEamil = async (to, from, cc, bcc, subject, content, replacements, at
             attachments: attachments,
             priority: "high"
           };
+          console.log('mailOptions: ', mailOptions)
           let info = await transporter.sendMail(mailOptions);
           return info;
         });

@@ -54,11 +54,11 @@ exports.initializeSystem = async (req,h) => {
         // --------------------------------------------- CREATING EMAIL TEMPLATES ------------------------------------------
 
         await Models.EmailTemplate.bulkCreate([
-            {code:'SIGNUP_PROCESS',status:Constants.STATUS.ACTIVE},
-            {code:'SIGNUP_SUCCESS',status:Constants.STATUS.ACTIVE},
-            {code:'SIGNUP_INVITATION',status:Constants.STATUS.ACTIVE},
-            {code:'RESEND_EMAIL_TOKEN',status:Constants.STATUS.ACTIVE},
-            {code:'RESET_PASSWORD',status:Constants.STATUS.ACTIVE},
+            {accountId:1,createdById:1,lastUpdatedById:1,code:'SIGNUP_PROCESS',status:Constants.STATUS.ACTIVE},
+            {accountId:1,createdById:1,lastUpdatedById:1,code:'SIGNUP_SUCCESS',status:Constants.STATUS.ACTIVE},
+            {accountId:1,createdById:1,lastUpdatedById:1,code:'SIGNUP_INVITATION',status:Constants.STATUS.ACTIVE},
+            {accountId:1,createdById:1,lastUpdatedById:1,code:'RESEND_EMAIL_TOKEN',status:Constants.STATUS.ACTIVE},
+            {accountId:1,createdById:1,lastUpdatedById:1,code:'RESET_PASSWORD',status:Constants.STATUS.ACTIVE},
         ],{transaction:transaction});
 
         // --------------------------------------------- CREATING EMAIL TEMPLATE CONTENT ------------------------------------------
@@ -81,8 +81,11 @@ exports.initializeSystem = async (req,h) => {
         ]
         await Models.Permission.bulkCreate(permissionCodes,{transaction:transaction});
 
-        const adminRole = await Models.Role.findOne({where:{id:1}});
+        const adminRole = await Models.Role.findOne({where:{name:'Admin'}});
         await adminRole.setPermissions([1,2,3,4],{transaction:transaction});
+
+        const userRole = await Models.Role.findOne({where:{name:'User'}});
+        await userRole.setPermissions([1,2,3,4],{transaction:transaction});
 
         // --------------------------------------------- CREATING RECIPIENT TYPES ------------------------------------------
 

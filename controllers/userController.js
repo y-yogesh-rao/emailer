@@ -121,9 +121,10 @@ exports.updateUserStatus = async (req,h) => {
 exports.signup = async (req,h) => {
     const transaction = await Models.sequelize.transaction();
     try {
-        let languageId = LanguageIds[LanguageCodes.indexOf(req.headers.language)];
-        let { username, email, password, confirmPassword } = req.payload;
         let languageCode = req.headers.language;
+        let languageId = LanguageIds[LanguageCodes.indexOf(req.headers.language)];
+
+        let {email,password,confirmPassword,phoneNumber,countryCode,firstName,lastName,dob,gender} = req.payload;
 
         if(password !== confirmPassword) {
             await transaction.rollback();
@@ -133,34 +134,34 @@ exports.signup = async (req,h) => {
         let VerifyEmail = await Models.User.findOne({where:{email}});
         console.log('******', VerifyEmail);
         let type='signup';
-        if(!VerifyEmail){
+        if(!VerifyEmail) {
             let emailTemplate = await Models.EmailTemplate.findOne({
                 where:{code:"SIGNUP_PROCESS"},
                 include:[
                     {
                         model:Models.EmailTemplateContent,
-                        where:{language_id:languageId},
+                        where:{languageId},
                         required: false
                     },{
                         model:Models.EmailTemplateContent,
                         as:"defaultContent",
-                        where:{language_id:process.env.DEFAULT_LANGUANGE_CODE_ID},
+                        where:{languageId:process.env.DEFAULT_LANGUANGE_CODE_ID},
                         required: false,
                     }
                 ]
             });
             
             if(emailTemplate){
-                token = Common.signToken({email,type,username,password});
+                token = Common.signToken({email,type,password,phoneNumber,countryCode,firstName,lastName,dob,gender});
                 code = Common.generateCode(4);
 
-                await Models.Token.upsert({email,username,token,code,status:Constants.STATUS.ACTIVE,type},{where:{email,type},transaction:transaction});
+                await Models.Token.upsert({email,token,type,code,status:Constants.STATUS.ACTIVE},{where:{email,type},transaction:transaction});
 
-                let emailContent = emailTemplate.EmailTemplateContents.length>0?emailTemplate.EmailTemplateContents[0].content:emailTemplate.defaultContent[0].content;
-                let subject = emailTemplate.EmailTemplateContents.length>0?emailTemplate.EmailTemplateContents[0].subject:emailTemplate.defaultContent[0].subject;
+                let emailContent = emailTemplate.EmailTemplateContents.length > 0 ? emailTemplate.EmailTemplateContents[0].content : emailTemplate.defaultContent[0].content;
+                let subject = emailTemplate.EmailTemplateContents.length > 0 ? emailTemplate.EmailTemplateContents[0].subject : emailTemplate.defaultContent[0].subject;
                 let replacement = { token:token, code:code, domain:`${process.env.DOMAIN}:${process.env.NODE_PORT}/user/verifyEmail/token=` };
 
-                await Common.sendEamil([email],[process.env.FROM_EMAIL],[],[],subject,emailContent,replacement,[],languageCode,'default');
+                await Common.sendEmail([email],[process.env.FROM_EMAIL],[],[],subject,emailContent,replacement,[],languageCode,'default');
 
                 await transaction.commit();
                 return h.response({success:true,message:req.i18n.__('VERIFICATION_EMAIL_SENT_SUCCESSFULLY'),responseData:{token}}).code(200);
@@ -225,32 +226,53 @@ exports.verifyCode = async (req,h) => {
     try{
         let languageId = LanguageIds[LanguageCodes.indexOf(req.headers.language)];
         let languageCode = req.headers.language;
+
         let code = req.payload.code;
         let token = req.payload.token;
         let verificationType = req.payload.verificationType;
+
         let verifyToken = await Models.Token.findOne({where:{token:token,code:code,status:Constants.STATUS.ACTIVE}});
         if (verifyToken) {
             let tokenData = await Common.validateToken(Jwt.decode(token));
             let userData = tokenData.credentials.userData;
+            console.log('User data: ', userData);
             switch (verificationType) {
                 case 'signup':
                     const rounds = parseInt(process.env.HASH_ROUNDS);
                     let userPassword = Bcrypt.hashSync(userData.password,rounds);
+                    const userRole = await Models.Role.findOne({where:{name:'User'}});
                     let email = userData.email;
+
+                    const doExists = await  Models.User.findOne({where:{
+                        [Op.or]: [
+                            {email:userData.email},
+                            {phoneNumber:userData.phoneNumber},
+                        ]
+                    }})
+                    if(doExists) {
+                        await transaction.rollback();
+                        return h.response({success:false,message:req.i18n.__("EMAIL_OR_PHONE_NUMBER_IS_ALREADY_IN_USE"),responseData:{}}).code(400);
+                    }
+
                     let newUser = await Models.User.create({
+                        roleId:userRole.id,
                         email:userData.email,
-                        username: userData.username,
                         password:userPassword,
-                        status:Constants.STATUS.VERIFICATION_PENDING,
-                        account_id:1
-                    },{transaction:transaction});
+                        countryCode:userData.countryCode,
+                        phoneNumber:userData.phoneNumber,
+                        status:Constants.STATUS.ACTIVE,
+                        UserProfile:{
+                            gender:userData.gender,
+                            lastName:userData.lastName,
+                            firstName:userData.firstName,
+                            dob:Moment(userData.dob,'YYYY-MM-DD'),
+                        }
+                    },{include:{model:Models.UserProfile},transaction:transaction});
                     if (newUser) {
                         let pass = "*".repeat(userData.password.length);
-                        let userObject = {id:newUser.id,email:newUser.email,username:newUser.username,status:newUser.status,password:pass,account_id:newUser.account_id,token_status:Constants.STATUS.INACTIVE,hasAllAccess:0};
-
-                        await verifyToken.update({status:Constants.STATUS.INACTIVE,user_id:newUser.id},{transaction:transaction});
-                        // responseData = await loginAction(userObject);
-                        responseData = userObject;
+                        newUser.dataValues.password = pass;
+                        await verifyToken.update({status:Constants.STATUS.INACTIVE,userId:newUser.id},{transaction:transaction});
+                        responseData = await loginAction(newUser);
 
                         //send email to user
                         let emailTemplate = await Models.EmailTemplate.findOne({
@@ -258,12 +280,12 @@ exports.verifyCode = async (req,h) => {
                             include:[
                                 {
                                     model:Models.EmailTemplateContent,
-                                    where:{language_id:languageId},
+                                    where:{languageId},
                                     required: false
                                 },{
                                     model:Models.EmailTemplateContent,
                                     as:"defaultContent",
-                                    where:{language_id:process.env.DEFAULT_LANGUANGE_CODE_ID},
+                                    where:{languageId:process.env.DEFAULT_LANGUANGE_CODE_ID},
                                     required: false,
                                 }
                             ]
@@ -273,18 +295,10 @@ exports.verifyCode = async (req,h) => {
                         let subject = emailTemplate.EmailTemplateContents.length>0 ? emailTemplate.EmailTemplateContents[0].subject : emailTemplate.defaultContent[0].subject;
 
                         let replacement = { domain:`${process.env.DOMAIN}:${process.env.NODE_PORT}` };
-                        await Common.sendEamil([email],[process.env.FROM_EMAIL],[],[],subject,emailContent,replacement,[],languageCode,'default');
-
-                        const invitationTokens = await Models.Token.findAll({where:{email:userData.email,type:'signup-broker-invitation'}});
-                        for(let invitationToken of invitationTokens) {
-                            await invitationToken.update({status:Constants.STATUS.INACTIVE},{transaction:transaction});
-                            let tokenData = JSON.parse(decrypt(invitationToken.dataValues.token));
-                            await Models.Job.update({broker_id:newUser.id},{where:{id:tokenData.jobId},transaction:transaction});
-                        }
+                        await Common.sendEmail([email],[process.env.FROM_EMAIL],[],[],subject,emailContent,replacement,[],languageCode,'default');
 
                         await transaction.commit();
                         return h.response({success:true,message:req.i18n.__("USER_VERIFIED_SUCCESSFULLY"),responseData}).code(200);
-
                     } else {
                         await transaction.rollback();
                         return h.response({success:false,message:req.i18n.__("ERROR_WHILE_CREATING_THE_USER"),responseData:{}}).code(400);

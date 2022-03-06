@@ -26,7 +26,6 @@ module.exports = (sequelize, DataTypes) => {
         status: { type: DataTypes.INTEGER, defaultValue: Constants.STATUS.ACTIVE },
       },
       {
-        paranoid: true,
         underscored: true,
         tableName: "senders",
       }

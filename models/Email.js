@@ -10,11 +10,13 @@ module.exports = (sequelize, DataTypes) => {
           autoIncrement: true,
           allowNull: false
         },
-        content: { type: DataTypes.TEXT, allowNull: false},
-        userId: { type: DataTypes.INTEGER, allowNull: false },
-        attachments: { type: DataTypes.TEXT, defaultValue: null},
+        accountId: { type: DataTypes.INTEGER, allowNull: false },
         emailTemplateId: { type: DataTypes.INTEGER, allowNull: false },
-        status:{ type: DataTypes.INTEGER, allowNull:false, defaultValue: Constants.STATUS.ACTIVE },
+        fromEmail: { type: DataTypes.STRING, defaultValue: null },
+        recipients:{ type: DataTypes.TEXT, defaultValue: null },
+        content: { type: DataTypes.TEXT, allowNull: false},
+        attachments: { type: DataTypes.TEXT, defaultValue: null },
+        status: { type: DataTypes.INTEGER, allowNull:false, defaultValue: Constants.STATUS.ACTIVE },
       },
       {
         paranoid: true,
@@ -22,9 +24,11 @@ module.exports = (sequelize, DataTypes) => {
         tableName: "emails"
       }
     );
-    Email.associate = function(models) {
-      Email.belongsTo(models.User, { foreignKey: "userId"});
+
+    Email.associate = (models) => {
+      Email.belongsTo(models.User, { foreignKey: "accountId"});
       Email.belongsTo(models.EmailTemplate, { foreignKey: "emailTemplateId"});
     };
+
     return Email;
 }; 

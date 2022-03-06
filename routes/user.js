@@ -108,9 +108,14 @@ module.exports = [
 					abortEarly: false
 				},
 				payload:{
-					username: Joi.string().optional().default(null),
+					dob: Joi.string().max(50).optional().default(null),
+					gender: Joi.string().max(20).optional().default(null),
+					lastName: Joi.string().max(250).optional().default(null),
+					countryCode: Joi.string().max(10).optional().default('+91'),
+					phoneNumber: Joi.string().min(5).max(15).optional().default(null),
 					email: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'EMAIL_IS_REQUIRED')}),
 					password: Joi.string().required().min(8).error(errors=>{return Common.routeError(errors,'PASSWORD_IS_REQUIRED')}),
+					firstName: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'FIRST_NAME_IS_REQUIRED')}),
 					confirmPassword: Joi.string().required().min(8).error(errors=>{return Common.routeError(errors,'CONFIRM_PASSWORD_IS_REQUIRED')})
 				},
 				failAction: async (req, h, err) => {

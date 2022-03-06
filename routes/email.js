@@ -7,7 +7,7 @@ module.exports = [
 		handler : emailController.getEmailTemplates,
 		options: {
 			tags: ["api", "Email"],
-			notes: "Endpoint to get defined email template by code",
+			notes: "Endpoint to get defined email template by id",
 			description:"Get email template",
 			auth: {strategy: 'jwt', scope: ["admin","user","manage-email-templates"]},
 			validate: {
@@ -18,7 +18,7 @@ module.exports = [
 					abortEarly: false
 				},
 				query: {
-					code : Joi.string().optional().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_SUBJECT_IS_REQUIRED')}),
+					emailTemplateId : Joi.number().integer().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_ID_IS_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {
 					return Common.FailureError(err, req);
@@ -45,10 +45,11 @@ module.exports = [
 					abortEarly: false
 				},
 				query: {
-					limit: Joi.number().optional(),
-					page : Joi.number().optional().default(1),
-					subject : Joi.string().optional().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_SUBJECT_IS_REQUIRED')}),
-					content : Joi.string().optional().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_CONTENT_IS_REQUIRED')}),
+					status: Joi.number().valid(0,1).optional().default(null),
+					pageNumber: Joi.number().integer().optional().default(null),
+					limit: Joi.number().integer().min(0).max(50).optional().default(null),
+					orderByValue: Joi.string().allow('ASC','DESC').optional().default('DESC'),
+					orderByParameter: Joi.string().allow('createdAt','id').optional().default('createdAt'),
 				},
 				failAction: async (req, h, err) => {
 					return Common.FailureError(err, req);
@@ -68,14 +69,14 @@ module.exports = [
 			description:"Create email template",
 			auth: {strategy: 'jwt', scope: ["admin","user","manage-email-templates"]},
 			validate: {
-				headers: Joi.object(Common.headers()).options({
+				headers: Joi.object(Common.headers(true)).options({
 					allowUnknown: true
 				}),
 				options: {
 					abortEarly: false
 				},
 				payload: {
-					replacements : Joi.string().optional(),
+					replacements : Joi.string().optional().default(null),
                     code : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_CODE_IS_REQUIRED')}),
 					subject : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_SUBJECT_IS_REQUIRED')}),
 					content : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_CONTENT_IS_REQUIRED')}),
@@ -136,6 +137,35 @@ module.exports = [
 				},
 				payload: {
 					emailTemplateId:Joi.number().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_ID_IS_REQUIRED')}),
+				},
+				failAction: async (req, h, err) => {
+					return Common.FailureError(err, req);
+				},
+				validator: Joi
+			},
+			pre : [{method: Common.prefunction}]
+		}
+	},
+    {
+		method : "POST",
+		path : "/email/sendMailToRecipients",
+		handler : emailController.sendMailToRecipients,
+		options: {
+			tags: ["api", "Email"],
+			notes: "Endpoint to send mails to all the recipients by selecting one of the email templates",
+			description:"Send Email",
+			auth: {strategy: 'jwt', scope: ["admin","user","manage-email-templates"]},
+			validate: {
+				headers: Joi.object(Common.headers(true)).options({
+					allowUnknown: true
+				}),
+				options: {
+					abortEarly: false
+				},
+				payload: {
+					senderId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'SENDER_ID_IS_REQUIRED')}),
+					emailTemplateId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_ID_IS_REQUIRED')}),
+					recipients: Joi.array().items(Joi.string().email()).required().error(errors=>{return Common.routeError(errors,'RECIPIENTS_IS/ARE_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {
 					return Common.FailureError(err, req);

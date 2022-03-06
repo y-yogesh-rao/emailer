@@ -10,11 +10,11 @@ module.exports = (sequelize, DataTypes) => {
           autoIncrement: true,
           allowNull: false
         },
+        languageId: { type: DataTypes.INTEGER, allowNull: false, unique: 'uniqueLanguage' },
+        emailTemplateId: { type: DataTypes.INTEGER, allowNull: false, unique: 'uniqueLanguage' },
         content: { type: DataTypes.TEXT, allowNull: false },
         subject: { type: DataTypes.TEXT, allowNull: false },
         replacements: { type: DataTypes.TEXT, defaultValue: null },
-        languageId: { type: DataTypes.INTEGER, allowNull: false, unique: 'uniqueLanguage' },
-        emailTemplateId: { type: DataTypes.INTEGER, allowNull: false, unique: 'uniqueLanguage' },
       },
       {
         paranoid: true,

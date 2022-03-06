@@ -68,14 +68,10 @@ exports.deleteSender = async (req,h) => {
             await transaction.rollback();
             return h.response({success:false,message:req.i18n.__('SENDER_NOT_FOUND'),responseData:{}}).code(400);
         }
-
-        const updatedEmail = `${senderExists.senderEmail}_ARCHIVED_${Moment().valueOf()}`;
-        await senderExists.update({senderEmail:updatedEmail},{transaction:transaction});
         
         const deletedSender = await senderExists.destroy({where:{id:senderId}},{transaction:transaction});
-
         await transaction.commit();
-        return h.response({success:true,message:req.i18n.__('SENDER_UPDATED_SUCCESSFULLY'),responseData:{deletedSender}}).code(200);
+        return h.response({success:true,message:req.i18n.__('SENDER_REMOVED_SUCCESSFULLY'),responseData:{deletedSender}}).code(200);
     } catch(error) {
         console.log(error);
         await transaction.rollback();
