@@ -243,7 +243,7 @@ exports.sendMailToRecipients = async (req,h) => {
             let emailContent = emailTemplate.EmailTemplateContents.length > 0 ? emailTemplate.EmailTemplateContents[0].content : emailTemplate.defaultContent[0].content;
 
             console.log('___________', senderExists.senderEmail)
-            await Common.sendEmail(recipients,[senderExists.senderEmail],[],[],subject,emailContent,replacement,[],languageCode,'default');
+            await Common.sendEmail(recipients,[process.env.FROM_EMAIL],[],[],subject,emailContent,replacement,[],languageCode,'default');
             await transaction.commit();
             return h.response({success:true,message:req.i18n.__('EMAILS_SENT_TO_RECIPIENTS'),responseData:{}}).code(200);
         } else {
