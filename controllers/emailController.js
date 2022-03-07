@@ -37,7 +37,7 @@ exports.listEmailTemplates = async (req,h) => {
         const userId = req.auth.credentials.userData.User.id;
         const roleId = req.auth.credentials.userData.User.roleId;
 
-        let where = (roleId === 1) ? {} : {accountId:{[Op.in]:[1,userId]}};
+        let where = {accountId:userId};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;
         const offset = (req.query.pageNumber-1) * limit;
 
@@ -221,6 +221,7 @@ exports.sendMailToRecipients = async (req,h) => {
             return h.response({success:false,message:req.i18n.__('SENDER_NOT_FOUND'),responseData:{}}).code(400);
         }
 
+        console.log(senderExists)
         let emailTemplate = await Models.EmailTemplate.findOne({
             where:{id:emailTemplateId},
             include:[

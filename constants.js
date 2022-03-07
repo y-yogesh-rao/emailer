@@ -4,6 +4,13 @@ module.exports = {
         ACTIVE: 1
     },
     PAGINATION_LIMIT: 20,
+    // SMTP: {
+    //     ssl:'ssl',
+    //     port:'465',
+    //     host:'93.188.167.79',
+    //     password:'Hq()1kAi<`[kb8764',
+    //     username:'support@climechime.com',
+    // },
     SMTP: {
         ssl:'ssl',
         port:'465',
