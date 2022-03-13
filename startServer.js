@@ -22,6 +22,7 @@ init = async () => {
         in: "header"
       }
     },
+    schemes:["http","https"],
     grouping: "tags",
     sortEndpoints: "ordered",
     consumes: ["application/json"],

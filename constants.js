@@ -35,17 +35,17 @@ module.exports = {
                 console.log('------------Cron Job Executed ( Every Day ) -----------');
             }
         },
-        {
-            name: 'fiveMinuteCron',
-            time: '*/1 * * * *',
-            timezone: 'Asia/Calcutta',
-            request: {
-            method: 'GET',
-                url: '/cron/fiveMinuteCron'
-            },
-            onComplete: (res) => {
-                console.log('------------Cron Job Executed ( Every 5 minutes ) -----------');
-            }
-        }
+        // {
+        //     name: 'fiveMinuteCron',
+        //     time: '*/5 * * * *',
+        //     timezone: 'Asia/Calcutta',
+        //     request: {
+        //     method: 'GET',
+        //         url: '/cron/fiveMinuteCron'
+        //     },
+        //     onComplete: (res) => {
+        //         console.log('------------Cron Job Executed ( Every 5 minutes ) -----------');
+        //     }
+        // }
     ]
 }
