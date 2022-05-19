@@ -1,6 +1,7 @@
 exports.listRecipientTypes = async (req,h) => {
     try {
-        let where={};
+        const accountId = req.auth.credentials.userData.User.accountId;
+        let where={accountId};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;
         const offset = (req.query.pageNumber-1) * limit;
 

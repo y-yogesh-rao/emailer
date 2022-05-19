@@ -2,7 +2,7 @@ exports.addRecipient = async (req,h) => {
     const transaction = await Models.sequelize.transaction();
     try {
         const createdById = req.auth.credentials.userData.User.id;
-        const accountId = createdById;
+        const accountId = req.auth.credentials.userData.User.accountId;
         const lastUpdatedById = createdById;
         const attachmentId = req.payload.attachmentId;
         const recipientTypeId = req.payload.recipientTypeId;
@@ -20,7 +20,6 @@ exports.addRecipient = async (req,h) => {
             return h.response({success:false,message:req.i18n.__('RECIPIENT_WITH_THIS_EMAIL_ID_ALREADY_EXISTS'),responseData:{}}).code(400);
         }
 
-        console.log('***********', recipientEmail,recipientName)
         const addedRecipient = await Models.Recipient.create({
             createdById,accountId,lastUpdatedById,recipientEmail,recipientName,alternateRecipientEmail,country,city,state,postalCode,addressLine_1,
             addressLine_2,recipientTypeId,attachmentId
@@ -111,7 +110,7 @@ exports.deleteRecipient = async (req,h) => {
 
 exports.listRecipients = async (req,h) => {
     try {
-        const accountId = req.auth.credentials.userData.User.id;
+        const accountId = req.auth.credentials.userData.User.accountId;
         let where={accountId};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;
         const offset = (req.query.pageNumber-1) * limit;

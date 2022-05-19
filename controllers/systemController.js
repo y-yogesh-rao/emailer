@@ -13,9 +13,17 @@ exports.initializeUsers = async (req,h) => {
         const userRole = await Models.Role.create({name:'User'},{transaction:transaction});
 
         const adminPassword = Bcrypt.hashSync(process.env.GLOBAL_ADMIN_PASSWORD,parseInt(process.env.HASH_ROUNDS));
+        const userPassword = Bcrypt.hashSync(process.env.GLOBAL_USER_PASSWORD,parseInt(process.env.HASH_ROUNDS));
         await Models.User.create({
             roleId:adminRole.id,email:process.env.GLOBAL_ADMIN_EMAIL,password:adminPassword,status:Constants.STATUS.ACTIVE,phoneNumber:'1234567890',
             UserProfile:{firstName:'Admin'}
+        },{include:[
+            {model:Models.UserProfile}
+        ],transaction:transaction});
+
+        await Models.User.create({
+            roleId:userRole.id,email:process.env.GLOBAL_USER_EMAIL,password:userPassword,status:Constants.STATUS.ACTIVE,phoneNumber:'0987654321',
+            UserProfile:{firstName:'User'}
         },{include:[
             {model:Models.UserProfile}
         ],transaction:transaction});
@@ -61,7 +69,7 @@ exports.initializeSystem = async (req,h) => {
             {accountId:1,createdById:1,lastUpdatedById:1,code:'RESET_PASSWORD',status:Constants.STATUS.ACTIVE},
         ],{transaction:transaction});
 
-        // --------------------------------------------- CREATING EMAIL TEMPLATE CONTENT ------------------------------------------
+        // --------------------------------------------- CREATING ADMIN EMAIL TEMPLATE CONTENT ------------------------------------------
 
         await Models.EmailTemplateContent.bulkCreate([
             {emailTemplateId:1,languageId:1,content:'<div><h3>Hi! Your Verification Code is {{code}} </h3><br> Or <br> Click the below URL to verify email <br> {{domain}}{{token}}</div>',subject:'Verification Code',replacements:'code,domain,token'},
@@ -77,7 +85,8 @@ exports.initializeSystem = async (req,h) => {
             {permissionCode:'manage-contacts'},                               // 1
             {permissionCode:'manage-senders'},                                // 2
             {permissionCode:'manage-emails'},                                 // 3
-            {permissionCode:'manage-email-templates'}                         // 4
+            {permissionCode:'manage-email-templates'},                        // 4
+            {permissionCode:'manage-recipient-types'},                        // 5
         ]
         await Models.Permission.bulkCreate(permissionCodes,{transaction:transaction});
 
@@ -90,7 +99,56 @@ exports.initializeSystem = async (req,h) => {
         // --------------------------------------------- CREATING RECIPIENT TYPES ------------------------------------------
 
         await Models.RecipientType.bulkCreate([
-            {createdById:1,lastUpdatedById:1,name:'Global'}
+            {createdById:2,lastUpdatedById:2,accountId:2,name:'India'},
+            {createdById:2,lastUpdatedById:2,accountId:2,name:'Russia'},
+            {createdById:2,lastUpdatedById:2,accountId:2,name:'Canada'},
+            {createdById:2,lastUpdatedById:2,accountId:2,name:'Australia'},
+        ],{transaction:transaction});
+
+        // --------------------------------------------- CREATING RECIPIENTS ------------------------------------------
+
+        await Models.Recipient.bulkCreate([
+            {
+                country: 'India',
+                recipientName:'Indian Friend',
+                recipientEmail:'indian@yopmail.com',
+                createdById:2,lastUpdatedById:2,accountId:2,
+            },
+            {
+                country: 'Russia',
+                recipientName:'Russian Friend',
+                recipientEmail:'russian@yopmail.com',
+                createdById:2,lastUpdatedById:2,accountId:2,
+            },
+            {
+                country: 'Canada',
+                recipientName:'Canadan Friend',
+                recipientEmail:'canadian@yopmail.com',
+                createdById:2,lastUpdatedById:2,accountId:2,
+            },
+            {
+                country: 'Australia',
+                recipientName:'Australian Friend',
+                recipientEmail:'australian@yopmail.com',
+                createdById:2,lastUpdatedById:2,accountId:2,
+            },
+        ],{transaction:transaction});
+
+        // --------------------------------------------- CREATING SENDERS ------------------------------------------
+
+        await Models.Sender.bulkCreate([
+            {
+                country: 'India',
+                senderName:'Sender 01',
+                senderEmail:'sender01@yopmail.com',
+                createdById:2,lastUpdatedById:2,accountId:2,
+            },
+            {
+                country: 'India',
+                senderName:'Sender 02',
+                senderEmail:'sender02@yopmail.com',
+                createdById:2,lastUpdatedById:2,accountId:2,
+            }
         ],{transaction:transaction});
 
         await transaction.commit();

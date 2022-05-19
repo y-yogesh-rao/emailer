@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
           autoIncrement: true,
           type: DataTypes.INTEGER,
         },
+        accountId: { type: DataTypes.INTEGER, defaultValue: null },
         createdById: { type: DataTypes.INTEGER, defaultValue: null },
         lastUpdatedById: { type: DataTypes.INTEGER, defaultValue: null },
         name: { type: DataTypes.STRING, allowNull: false },

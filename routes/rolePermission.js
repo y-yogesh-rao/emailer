@@ -18,9 +18,11 @@ module.exports = [
 					return Common.FailureError(err, req);
 				},
                 query: {
-                    status: Joi.number().optional().valid(0,1).default(null),
-                    pageNumber: Joi.number().integer().optional().default(null),
-                    flag: Joi.string().optional().valid('DEFAULT_ROLES','ALL_ROLES').default('DEFAULT_ROLES'),
+                    status: Joi.number().valid(0,1).optional().default(null),
+					pageNumber: Joi.number().integer().optional().default(null),
+					limit: Joi.number().integer().min(0).max(50).optional().default(null),
+					orderByValue: Joi.string().allow('ASC','DESC').optional().default('DESC'),
+					orderByParameter: Joi.string().allow('createdAt','id').optional().default('createdAt'),
                 },
 				validator: Joi
 			},

@@ -90,6 +90,35 @@ module.exports = [
 		}
 	},
 	{
+        method : "POST",
+        path : "/email/sendMailToRecipients",
+        handler : emailController.sendMailToRecipients,
+        options: {
+            tags: ["api", "Email"],
+            notes: "Endpoint to send mails to all the recipients by selecting one of the email templates",
+            description:"Send Email",
+            auth: {strategy: 'jwt', scope: ["admin","user","manage-email-templates"]},
+            validate: {
+                headers: Joi.object(Common.headers(true)).options({
+                    allowUnknown: true
+                }),
+                options: {
+                    abortEarly: false
+                },
+                payload: {
+                    senderId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'SENDER_ID_IS_REQUIRED')}),
+                    emailTemplateId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_ID_IS_REQUIRED')}),
+                    recipients: Joi.array().items(Joi.string().email()).required().error(errors=>{return Common.routeError(errors,'RECIPIENTS_IS/ARE_REQUIRED')}),
+                },
+                failAction: async (req, h, err) => {
+                    return Common.FailureError(err, req);
+                },
+                validator: Joi
+            },
+            pre : [{method: Common.prefunction}]
+        }
+    },
+	{
 		method : "PATCH",
 		path : "/email/updateEmailTemplate",
 		handler : emailController.updateEmailTemplate,
@@ -146,33 +175,31 @@ module.exports = [
 			pre : [{method: Common.prefunction}]
 		}
 	},
-    {
-		method : "POST",
-		path : "/email/sendMailToRecipients",
-		handler : emailController.sendMailToRecipients,
-		options: {
-			tags: ["api", "Email"],
-			notes: "Endpoint to send mails to all the recipients by selecting one of the email templates",
-			description:"Send Email",
-			auth: {strategy: 'jwt', scope: ["admin","user","manage-email-templates"]},
-			validate: {
-				headers: Joi.object(Common.headers(true)).options({
-					allowUnknown: true
-				}),
-				options: {
-					abortEarly: false
-				},
-				payload: {
-					senderId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'SENDER_ID_IS_REQUIRED')}),
-					emailTemplateId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_ID_IS_REQUIRED')}),
-					recipients: Joi.array().items(Joi.string().email()).required().error(errors=>{return Common.routeError(errors,'RECIPIENTS_IS/ARE_REQUIRED')}),
-				},
-				failAction: async (req, h, err) => {
-					return Common.FailureError(err, req);
-				},
-				validator: Joi
-			},
-			pre : [{method: Common.prefunction}]
-		}
-	},
+	{
+        method : "POST",
+        path : "/email/sendEmail",
+        handler : emailController.sendEmail,
+        options: {
+            tags: ["api", "Email"],
+            notes: "Endpoint to send mail to specified people",
+            description:"Send Email",
+            auth: false,
+            validate: {
+                options: {
+                    abortEarly: false
+                },
+                payload: {
+                    html: Joi.string().required().error(errors=>{return Common.routeError(errors,'BODY_IS_REQUIRED')}),
+                    subject: Joi.string().required().error(errors=>{return Common.routeError(errors,'SUBJECT_IS_REQUIRED')}),
+                    to: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'TO_EMAIL_IS_REQUIRED')}),
+                    from: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'FROM_EMAIL_IS_REQUIRED')}),
+                },
+                failAction: async (req, h, err) => {
+                    return Common.FailureError(err, req);
+                },
+                validator: Joi
+            },
+            pre : [{method: Common.prefunction}]
+        }
+    },
 ]

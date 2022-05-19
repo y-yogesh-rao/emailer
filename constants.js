@@ -11,13 +11,6 @@ module.exports = {
     //     password:'Hq()1kAi<`[kb8764',
     //     username:'support@climechime.com',
     // },
-    SMTP: {
-        ssl:'ssl',
-        port:'465',
-        host:'smtp.gmail.com',
-        password:'smtp@illuminz',
-        username:'smtp@illuminz.com',
-    },
     ROLE: {
         ADMIN: 1,
         USER: 2

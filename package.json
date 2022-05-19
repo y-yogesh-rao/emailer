@@ -46,6 +46,7 @@
     "pg-hstore": "^2.3.4",
     "read-excel-file": "^5.1.0",
     "request": "^2.88.2",
+    "sendmail": "^1.6.1",
     "sequelize": "^6.6.2",
     "sharp": "^0.28.3",
     "slug": "^5.1.0",

@@ -76,17 +76,17 @@ module.exports = [
 					abortEarly: false
 				},
 				payload: {
+					city: Joi.string().max(250).optional().default(null),
+					state: Joi.string().max(250).optional().default(null),
+					country: Joi.string().max(250).optional().default(null),
+					postalCode: Joi.string().max(8).optional().default(null),
 					attachmentId: Joi.number().integer().optional().default(null),
 					addressLine_2: Joi.string().max(5000).optional().default(null),
+					addressLine_1: Joi.string().max(5000).optional().default(null),
+					recipientTypeId: Joi.number().integer().optional().default(null),
 					alternateRecipientEmail: Joi.string().email().optional().default(null),
-					city: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'CITY_IS_REQUIRED')}),
-					state: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'STATE_IS_REQUIRED')}),
-					country: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'COUNTRY_NAME_IS_REQUIRED')}),
-					postalCode: Joi.string().max(8).required().error(errors=>{return Common.routeError(errors,'POSTAL_CODE_IS_REQUIRED')}),
 					recipientName: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'SENDER_NAME_IS_REQUIRED')}),
 					recipientEmail: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'RECIPIENT_EMAIL_IS_REQUIRED')}),
-					addressLine_1: Joi.string().max(5000).required().error(errors=>{return Common.routeError(errors,'COMPANY_ADDRESS_1_IS_REQUIRED')}),
-					recipientTypeId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'RECIPIENT_TYPE_ID_IS_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {
 					return Common.FailureError(err, req);

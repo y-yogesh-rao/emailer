@@ -172,6 +172,30 @@ exports.sendOTP = async (mobile) => {
     return{mobile:mobile,pinId:9999}
 }
 
+exports.sendEmailFromServer = async (to,from,subject,content,replacements,language,template,accountId) => {
+  readHTMLFile(__dirname + "/emails/"+language+'/' + template + ".html", async (err,html) => {
+    let sendto=to.join(',');
+    let template = handlebars.compile(html);
+    let mergeContent = template({content});
+    let templateToSend = handlebars.compile(mergeContent);
+    let htmlToSend = templateToSend(replacements);
+    let mailOptions = {
+      from: from,             // sender address
+      to: sendto,             // list of receivers
+      subject: subject,       // Subject line
+      html: htmlToSend,       // html body
+    };
+    const info = await sendmail(mailOptions);
+    await Models.Email.create({
+      accountId,
+      fromEmail:from,
+      recipients:sendto,
+      content:striptags(htmlToSend),
+    });
+    return info;
+  });
+}
+
 exports.sendEmail = async (to, from, cc, bcc, subject, content, replacements, attachments, language, template) => {
   let protocol = process.env.EMAIL_PROTOCOL;
   switch(protocol){

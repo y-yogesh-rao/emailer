@@ -1,3 +1,5 @@
+const sendmail = require('sendmail')();
+
 exports.getEmailTemplates = async(req,h) => {
     try{
         const emailTemplateId = req.query.emailTemplateId;
@@ -206,7 +208,7 @@ exports.deleteEmailTemplate = async (req,h) => {
 exports.sendMailToRecipients = async (req,h) => {
     const transaction = await Models.sequelize.transaction();
     try {
-        const userId = req.auth.credentials.userData.User.id;
+        const accountId = req.auth.credentials.userData.User.accountId;
 
         let languageCode = req.headers.language || process.env.DEFAULT_LANGUANGE_CODE;
         let languageId = LanguageIds[LanguageCodes.indexOf(req.headers.language)];
@@ -221,7 +223,6 @@ exports.sendMailToRecipients = async (req,h) => {
             return h.response({success:false,message:req.i18n.__('SENDER_NOT_FOUND'),responseData:{}}).code(400);
         }
 
-        console.log(senderExists)
         let emailTemplate = await Models.EmailTemplate.findOne({
             where:{id:emailTemplateId},
             include:[
@@ -239,12 +240,19 @@ exports.sendMailToRecipients = async (req,h) => {
         });
         
         if(emailTemplate) {
-            let replacement = null;
-            let subject = emailTemplate.EmailTemplateContents.length > 0 ? emailTemplate.EmailTemplateContents[0].subject : emailTemplate.defaultContent[0].subject;
-            let emailContent = emailTemplate.EmailTemplateContents.length > 0 ? emailTemplate.EmailTemplateContents[0].content : emailTemplate.defaultContent[0].content;
+            for(let recipientEmail of recipients) {
+                let replacements = {};
+                let recipientDetails = await Models.Recipient.findOne({where:{recipientEmail,accountId}});
+                if(recipientDetails !== null) {
+                    replacements["contactCountry"] = recipientDetails.country;
+                    replacements["contactName"] = recipientDetails.recipientName;
+                }
+                
+                let subject = emailTemplate.EmailTemplateContents.length > 0 ? emailTemplate.EmailTemplateContents[0].subject : emailTemplate.defaultContent[0].subject;
+                let emailContent = emailTemplate.EmailTemplateContents.length > 0 ? emailTemplate.EmailTemplateContents[0].content : emailTemplate.defaultContent[0].content;
+                await Common.sendEmailFromServer([recipientEmail],process.env.FROM_EMAIL,subject,emailContent,replacements,languageCode,'default',accountId);
+            }
 
-            console.log('___________', senderExists.senderEmail)
-            await Common.sendEmail(recipients,[process.env.FROM_EMAIL],[],[],subject,emailContent,replacement,[],languageCode,'default');
             await transaction.commit();
             return h.response({success:true,message:req.i18n.__('EMAILS_SENT_TO_RECIPIENTS'),responseData:{}}).code(200);
         } else {
@@ -254,6 +262,17 @@ exports.sendMailToRecipients = async (req,h) => {
     } catch(error) {
         console.log(error);
         await transaction.rollback();
+        return h.response({success:false,message:req.i18n.__('SOMETHING_WENT_WRONG'),responseData:{}}).code(500);
+    }
+}
+
+exports.sendEmail = async (req,h) => {
+    try {
+        const {from,to,subject,html} = req.payload;
+        await sendmail({from,to,subject,html});
+        return h.response({success:true,message:req.i18n.__('EMAIL_SENT_SUCCESSULLY'),responseData:{}}).code(200);
+    } catch(error) {
+        console.log(error);
         return h.response({success:false,message:req.i18n.__('SOMETHING_WENT_WRONG'),responseData:{}}).code(500);
     }
 }
