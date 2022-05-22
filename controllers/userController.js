@@ -81,11 +81,12 @@ exports.listUsers = async (req,h) => {
 exports.getUserDetails = async (req,h) => {
     try {
         const userId = req.auth.credentials.userData.User.id;
-        const userExists = await Models.User.findOne({
-            where:{id:userId},
-            include:[{model:Models.Role,attributes:['id','name']}],
-            attributes:["id","email","status","roleId","accountId","phoneNumber"],
-        });
+        const userExists = await Models.User.findOne({where:{id:userId},attributes:[
+            "id","email","status","roleId","accountId","phoneNumber",'dailyEmailLimit','emailsRemaining'
+        ],include:[
+            {model:Models.Role,attributes:['id','name']},
+            {model:Models.UserSetting,attributes:['id','apiKey','apiKeyName']},
+        ]});
 
         let responseData = userExists ? await loginAction(userExists) : null;
         return h.response({success:true,message:req.i18n.__('REQUEST_SUCCESSFUL'),responseData:responseData}).code(200);
@@ -132,7 +133,6 @@ exports.signup = async (req,h) => {
         }
 
         let VerifyEmail = await Models.User.findOne({where:{email}});
-        console.log('******', VerifyEmail);
         let type='signup';
         if(!VerifyEmail) {
             let emailTemplate = await Models.EmailTemplate.findOne({
@@ -871,6 +871,80 @@ exports.updateUserProfile = async (req,h) => {
 
         await transaction.commit();
         return h.response({success:true,message:req.i18n.__('PROFILE_UPDATED_SUCCESSFULLY'),responseData:{}}).code(200);
+    } catch (error) {
+        console.log(error);
+        await transaction.rollback();
+        return h.response({success:false,message:req.i18n.__('SOMETHING_WENT_WRONG'),responseData:{}}).code(500);
+    }
+}
+
+exports.generateApiKey = async (req,h) => {
+    const transaction = await Models.sequelize.transaction();
+    try {
+        const userId = req.auth.credentials.userData.User.id;
+        const apiKeyName = req.payload.apiKeyName;
+
+        const createdApiKey = await Models.UserSetting.create({userId,apiKeyName},{transaction:transaction});
+        delete createdApiKey.dataValues.apiSecret;
+        delete createdApiKey.dataValues.deletedAt;
+
+        await transaction.commit();
+        return h.response({success:true,message:req.i18n.__('API_KEY_GENERATED_SUCCESSFULLY'),responseData:{createdApiKey}}).code(200);
+    } catch (error) {
+        console.log(error);
+        await transaction.rollback();
+        return h.response({success:false,message:req.i18n.__('SOMETHING_WENT_WRONG'),responseData:{}}).code(500);
+    }
+}
+
+exports.deleteApiKey = async (req,h) => {
+    const transaction = await Models.sequelize.transaction();
+    try {
+        const userId = req.auth.credentials.userData.User.id;
+        const apiKey = req.payload.apiKey;
+        const apiKeyExists = await Models.UserSetting.findOne({where:{apiKey,userId},attributes:['id','apiKey','apiKeyName']});
+        if(!apiKeyExists) {
+            await transaction.rollback();
+            return h.response({success:false,message:req.i18n.__('API_KEY_NOT_FOUND'),responseData:{}}).code(400);
+        }
+
+        await apiKeyExists.destroy({},{transaction:transaction});
+        await transaction.commit();
+        return h.response({success:true,message:req.i18n.__('API_KEY_DELETED_SUCCESSFULLY'),responseData:{}}).code(200);
+    } catch (error) {
+        console.log(error);
+        await transaction.rollback();
+        return h.response({success:false,message:req.i18n.__('SOMETHING_WENT_WRONG'),responseData:{}}).code(500);
+    }
+}
+
+exports.directSignup = async (req,h) => {
+    const transaction = await Models.sequelize.transaction();
+    try {
+        
+        const userRole = await Models.Role.findOne({where:{name:'User'}});
+        if(!userRole) {
+            await transaction.rollback();
+            return h.response({success:false,message:req.i18n.__('USER_ROLE_NOT_FOUND'),responseData:{}}).code(500);
+        }
+
+        let {email,password,phoneNumber,firstName,lastName,dob,gender,organization,city,state,country,websites,newsletter,postalCode,streetAddress} = req.payload;
+        password = Bcrypt.hashSync(password,parseInt(process.env.HASH_ROUNDS));
+        if(dob !== null) dob = Moment(dob,'YYYY-MM-DD');
+
+        const createdUser = await Models.User.create({
+            email,password,phoneNumber,status:Constants.STATUS.ACTIVE,roleId:userRole.id,
+            UserProfile:{firstName,lastName,dob,gender,organization,city,state,country,websites,newsletter,postalCode,streetAddress},
+            UserSettings:[{apiKeyName:`Key_${Moment().valueOf()}`}]
+        },{include:[
+            {model:Models.UserProfile},
+            {model:Models.UserSetting},
+        ],transaction:transaction});
+
+        await createdUser.update({accountId:createdUser.id},{transaction:transaction});
+
+        await transaction.commit();
+        return h.response({success:true,message:req.i18n.__('API_KEY_DELETED_SUCCESSFULLY'),responseData:{}}).code(200);
     } catch (error) {
         console.log(error);
         await transaction.rollback();

@@ -26,8 +26,8 @@ module.exports = [
     },
 	// {
     //     method: "GET",
-    //     path: "/cron/fiveMinuteCron",
-    //     handler: cronController.fiveMinuteCron,
+    //     path: "/cron/oneMinuteCron",
+    //     handler: cronController.oneMinuteCron,
 	// 	options: {
 	// 		tags: ["api", "Cron"],
 	// 		notes: "Cron Job which runs every 5 minutes",

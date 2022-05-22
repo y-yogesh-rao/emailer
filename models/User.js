@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
         status: { type: DataTypes.INTEGER, defaultValue: Constants.STATUS.ACTIVE },
         phoneNumber: { type: DataTypes.STRING, allowNull: false, unique: 'phoneNumber'},
         tokenStatus: { type: DataTypes.INTEGER, defaultValue: Constants.STATUS.INACTIVE },
+        dailyEmailLimit: { type: DataTypes.INTEGER, defaultValue: Constants.USER_EMAIL_LIMIT },
+        emailsRemaining: { type: DataTypes.INTEGER, defaultValue: Constants.USER_EMAIL_LIMIT },
       },
       {
         paranoid: true,
@@ -30,6 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     User.associate = (models) => {
       User.belongsTo(models.Role, { foreignKey: 'roleId' });
       User.hasOne(models.UserProfile, { foreignKey: 'userId' });
+      User.hasMany(models.UserSetting, { foreignKey: 'userId' });
     };
 
     return User;

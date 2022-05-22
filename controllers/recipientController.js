@@ -13,16 +13,17 @@ exports.addRecipient = async (req,h) => {
             return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_NOT_FOUND'),responseData:{}}).code(400);
         }
 
-        let {recipientEmail,recipientName,alternateRecipientEmail,country,city,state,postalCode,addressLine_1,addressLine_2} = req.payload;
+        let {recipientEmail,recipientName,alternateRecipientEmail,country,city,state,postalCode,addressLine_1,addressLine_2,gender,dob,companyName} = req.payload;
         const recipientExists = await Models.Recipient.findOne({where:{recipientEmail,accountId}});
         if(recipientExists) {
             await transaction.rollback();
             return h.response({success:false,message:req.i18n.__('RECIPIENT_WITH_THIS_EMAIL_ID_ALREADY_EXISTS'),responseData:{}}).code(400);
         }
 
+        if(dob !== null) dob = Moment(dob,'YYYY-MM-DD');
         const addedRecipient = await Models.Recipient.create({
             createdById,accountId,lastUpdatedById,recipientEmail,recipientName,alternateRecipientEmail,country,city,state,postalCode,addressLine_1,
-            addressLine_2,recipientTypeId,attachmentId
+            addressLine_2,recipientTypeId,attachmentId,dob,gender,companyName
         },{transaction:transaction});
 
         await transaction.commit();
@@ -49,8 +50,11 @@ exports.updateRecipient = async (req,h) => {
         let updationObject={lastUpdatedById};
         if(req.payload.city !== null) updationObject['city']=req.payload.city;
         if(req.payload.state !== null) updationObject['state']=req.payload.state;
+        if(req.payload.gender !== null) updationObject['gender']=req.payload.gender;
         if(req.payload.country !== null) updationObject['country']=req.payload.country;
+        if(req.payload.dob !== null) updationObject['dob']=Moment(req.payload.dob,'YYYY-MM-DD');
         if(req.payload.postalCode !== null) updationObject['postalCode']=req.payload.postalCode;
+        if(req.payload.companyName !== null) updationObject['companyName']=req.payload.companyName;
         if(req.payload.attachmentId !== null) updationObject['attachmentId']=req.payload.attachmentId;
         if(req.payload.recipientName !== null) updationObject['recipientName']=req.payload.recipientName;
         if(req.payload.addressLine_1 !== null) updationObject['addressLine_1']=req.payload.addressLine_1;
@@ -110,10 +114,20 @@ exports.deleteRecipient = async (req,h) => {
 
 exports.listRecipients = async (req,h) => {
     try {
-        const accountId = req.auth.credentials.userData.User.accountId;
+        let accountId;
+        if(req.auth?.credentials?.userData) accountId = req.auth.credentials.userData.User.accountId;
+
+        const preValues = req.pre;
+        if(!preValues?.apiKeyValidation?.success) {
+            return h.response({success:false,message:req.i18n.__('INVALUD_USER'),responseData:{}}).code(401);
+        } else {
+            if(preValues?.apiKeyValidation?.data?.User?.accountId) accountId = preValues?.apiKeyValidation?.data?.User?.accountId;
+        }
+        
         let where={accountId};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;
         const offset = (req.query.pageNumber-1) * limit;
+
 
         const orderByValue = req.query.orderByValue;
         const orderByParameter = req.query.orderByParameter;

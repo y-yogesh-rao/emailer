@@ -410,5 +410,99 @@ module.exports = [
 			},
 			pre : [{method: Common.prefunction}]
 		}
-	}
+	},
+	{
+		method : "POST",
+		path : "/user/generateApiKey",
+		handler : userController.generateApiKey,
+		options: {
+			tags: ["api", "User API Key"],
+			notes: "Endpoint to generate API Key",
+			description: "Generate API Key",
+			auth: {strategy:'jwt'},
+			validate: {
+				headers: Joi.object(Common.headers(true)).options({
+					allowUnknown: true
+				}),
+				options: {
+					abortEarly: false
+				},
+				payload: {
+					apiKeyName: Joi.string().max(200).required().error(errors=>{return Common.routeError(errors,'API_KEY_NAME_IS_REQUIRED')}),
+				},
+				failAction: async (req, h, err) => {
+					return Common.FailureError(err, req);
+				},
+				validator: Joi
+			},
+			pre : [{method: Common.prefunction}]
+		}
+	},
+	{
+		method : "DELETE",
+		path : "/user/deleteApiKey",
+		handler : userController.deleteApiKey,
+		options: {
+			tags: ["api", "User API Key"],
+			notes: "Endpoint to elete API Key",
+			description: "Delete API Key",
+			auth: {strategy:'jwt'},
+			validate: {
+				headers: Joi.object(Common.headers(true)).options({
+					allowUnknown: true
+				}),
+				options: {
+					abortEarly: false
+				},
+				payload: {
+					apiKey: Joi.string().max(200).required().error(errors=>{return Common.routeError(errors,'API_KEY_IS_REQUIRED')}),
+				},
+				failAction: async (req, h, err) => {
+					return Common.FailureError(err, req);
+				},
+				validator: Joi
+			},
+			pre : [{method: Common.prefunction}]
+		}
+	},
+	{
+		method : "POST",
+		path : "/user/directSignup",
+		handler : userController.directSignup,
+		options: {
+			tags: ["api", "User"],
+			notes: "Endpoint to add new user directly",
+			description: "User Sign Up Dierct",
+			auth: {strategy:'jwt'},
+			validate: {
+				headers: Joi.object(Common.headers(true)).options({
+					allowUnknown: true
+				}),
+				options: {
+					abortEarly: false
+				},
+				payload: {
+					email: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'EMAIL_IS_REQUIRED')}),
+					password: Joi.string().max(100).required().error(errors=>{return Common.routeError(errors,'PASSWORD_IS_REQUIRED')}),
+					phoneNumber: Joi.string().max(15).required().error(errors=>{return Common.routeError(errors,'PHONE_NUMBER_IS_REQUIRED')}),
+					firstName: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'FIRST_NAME_IS_REQUIRED')}),
+					city: Joi.string().max(250).optional().default(null),
+					state: Joi.string().max(250).optional().default(null),
+					lastName: Joi.string().max(250).optional().default(null),
+					postalCode: Joi.string().max(250).optional().default(null),
+					newsletter: Joi.string().max(5000).optional().default(null),
+					organization: Joi.string().max(250).optional().default(null),
+					streetAddress: Joi.string().max(5000).optional().default(null),
+					gender: Joi.string().valid('Male','Female').optional().default(null),
+					dob: Joi.date().min(Moment().format('YYYY-MM-DD')).optional().default(null),
+					websites: Joi.array().items(Joi.string().max(5000)).max(250).optional().default([]),
+				},
+				failAction: async (req, h, err) => {
+					return Common.FailureError(err, req);
+				},
+				validator: Joi
+			},
+			pre : [{method: Common.prefunction}]
+		}
+	},
 ]

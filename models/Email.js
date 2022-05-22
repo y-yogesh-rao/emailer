@@ -11,11 +11,15 @@ module.exports = (sequelize, DataTypes) => {
           allowNull: false
         },
         accountId: { type: DataTypes.INTEGER, allowNull: false },
-        emailTemplateId: { type: DataTypes.INTEGER, allowNull: false },
+        emailTemplateId: { type: DataTypes.INTEGER, defaultValue: null },
         content: { type: DataTypes.TEXT, allowNull: false},
         recipients:{ type: DataTypes.TEXT, defaultValue: null },
+        opened: { type: DataTypes.BOOLEAN, defaultValue: false },
         fromEmail: { type: DataTypes.STRING, defaultValue: null },
         attachments: { type: DataTypes.TEXT, defaultValue: null },
+        clicked: { type: DataTypes.BOOLEAN, defaultValue: false },
+        delivered: { type: DataTypes.BOOLEAN, defaultValue: false },
+        unsubsribed: { type: DataTypes.BOOLEAN, defaultValue: false },
         status: { type: DataTypes.INTEGER, allowNull:false, defaultValue: Constants.STATUS.ACTIVE },
       },
       {

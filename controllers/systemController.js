@@ -14,19 +14,24 @@ exports.initializeUsers = async (req,h) => {
 
         const adminPassword = Bcrypt.hashSync(process.env.GLOBAL_ADMIN_PASSWORD,parseInt(process.env.HASH_ROUNDS));
         const userPassword = Bcrypt.hashSync(process.env.GLOBAL_USER_PASSWORD,parseInt(process.env.HASH_ROUNDS));
-        await Models.User.create({
+        const createdAdmin = await Models.User.create({
             roleId:adminRole.id,email:process.env.GLOBAL_ADMIN_EMAIL,password:adminPassword,status:Constants.STATUS.ACTIVE,phoneNumber:'1234567890',
-            UserProfile:{firstName:'Admin'}
+            UserProfile:{firstName:'Admin'},UserSettings:[{apiKeyName:'Admin API Key'}]
         },{include:[
-            {model:Models.UserProfile}
+            {model:Models.UserProfile},
+            {model:Models.UserSetting},
         ],transaction:transaction});
 
-        await Models.User.create({
+        const createdUser = await Models.User.create({
             roleId:userRole.id,email:process.env.GLOBAL_USER_EMAIL,password:userPassword,status:Constants.STATUS.ACTIVE,phoneNumber:'0987654321',
-            UserProfile:{firstName:'User'}
+            UserProfile:{firstName:'User'},UserSettings:[{apiKeyName: 'User API Key'}]
         },{include:[
-            {model:Models.UserProfile}
+            {model:Models.UserProfile},
+            {model:Models.UserSetting},
         ],transaction:transaction});
+
+        await createdAdmin.update({accountId:createdAdmin.id},{transaction:transaction});
+        await createdUser.update({accountId:createdUser.id},{transaction:transaction});
 
         await transaction.commit();
         return h.response({success:true,message:'SYSTEM_USERS_INITIALIZED_SUCCESSFULLY',responseData:{}}).code(200);
@@ -62,11 +67,11 @@ exports.initializeSystem = async (req,h) => {
         // --------------------------------------------- CREATING EMAIL TEMPLATES ------------------------------------------
 
         await Models.EmailTemplate.bulkCreate([
-            {accountId:1,createdById:1,lastUpdatedById:1,code:'SIGNUP_PROCESS',status:Constants.STATUS.ACTIVE},
-            {accountId:1,createdById:1,lastUpdatedById:1,code:'SIGNUP_SUCCESS',status:Constants.STATUS.ACTIVE},
-            {accountId:1,createdById:1,lastUpdatedById:1,code:'SIGNUP_INVITATION',status:Constants.STATUS.ACTIVE},
-            {accountId:1,createdById:1,lastUpdatedById:1,code:'RESEND_EMAIL_TOKEN',status:Constants.STATUS.ACTIVE},
-            {accountId:1,createdById:1,lastUpdatedById:1,code:'RESET_PASSWORD',status:Constants.STATUS.ACTIVE},
+            {accountId:null,createdById:1,lastUpdatedById:1,code:'SIGNUP_PROCESS',status:Constants.STATUS.ACTIVE},
+            {accountId:null,createdById:1,lastUpdatedById:1,code:'SIGNUP_SUCCESS',status:Constants.STATUS.ACTIVE},
+            {accountId:null,createdById:1,lastUpdatedById:1,code:'SIGNUP_INVITATION',status:Constants.STATUS.ACTIVE},
+            {accountId:null,createdById:1,lastUpdatedById:1,code:'RESEND_EMAIL_TOKEN',status:Constants.STATUS.ACTIVE},
+            {accountId:null,createdById:1,lastUpdatedById:1,code:'RESET_PASSWORD',status:Constants.STATUS.ACTIVE},
         ],{transaction:transaction});
 
         // --------------------------------------------- CREATING ADMIN EMAIL TEMPLATE CONTENT ------------------------------------------
@@ -140,13 +145,13 @@ exports.initializeSystem = async (req,h) => {
             {
                 country: 'India',
                 senderName:'Sender 01',
-                senderEmail:'sender01@yopmail.com',
+                senderEmail:'sender01@gmail.com',
                 createdById:2,lastUpdatedById:2,accountId:2,
             },
             {
                 country: 'India',
                 senderName:'Sender 02',
-                senderEmail:'sender02@yopmail.com',
+                senderEmail:'sender02@gmail.com',
                 createdById:2,lastUpdatedById:2,accountId:2,
             }
         ],{transaction:transaction});

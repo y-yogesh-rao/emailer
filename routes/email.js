@@ -59,6 +59,34 @@ module.exports = [
 			pre : [{method: Common.prefunction}]
 		}
 	},
+	{
+		method : "GET",
+		path : "/email/getPreBuiltTemplate",
+		handler : emailController.getPreBuiltTemplate,
+		options: {
+			tags: ["api", "Email"],
+			notes: "Endpoint to list defined email template for portal",
+			description:"List email templates",
+			auth: false,
+			validate: {
+				options: {
+					abortEarly: false
+				},
+				query: {
+					status: Joi.number().valid(0,1).optional().default(null),
+					pageNumber: Joi.number().integer().optional().default(null),
+					limit: Joi.number().integer().min(0).max(50).optional().default(null),
+					orderByValue: Joi.string().allow('ASC','DESC').optional().default('DESC'),
+					orderByParameter: Joi.string().allow('createdAt','id').optional().default('createdAt'),
+				},
+				failAction: async (req, h, err) => {
+					return Common.FailureError(err, req);
+				},
+				validator: Joi
+			},
+			pre : [{method: Common.prefunction}]
+		}
+	},
     {
 		method : "POST",
 		path : "/email/createEmailTemplate",
