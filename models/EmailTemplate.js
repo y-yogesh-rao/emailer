@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         },
         createdById: { type: DataTypes.INTEGER, allowNull: false },
         lastUpdatedById: { type: DataTypes.INTEGER, allowNull: false },
-        accountId: { type: DataTypes.INTEGER, allowNull: false, unique: 'emailTemplate' },
+        accountId: { type: DataTypes.INTEGER, defaultValue: null, unique: 'emailTemplate' },
         code: { type: DataTypes.STRING, allowNull: false, unique: 'emailTemplate' },
         status: { type: DataTypes.INTEGER, defaultValue: Constants.STATUS.ACTIVE },
       },

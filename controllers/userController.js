@@ -944,7 +944,7 @@ exports.directSignup = async (req,h) => {
         await createdUser.update({accountId:createdUser.id},{transaction:transaction});
 
         await transaction.commit();
-        return h.response({success:true,message:req.i18n.__('API_KEY_DELETED_SUCCESSFULLY'),responseData:{}}).code(200);
+        return h.response({success:true,message:req.i18n.__('USER_SIGNED_UP_SUCCESSFULLY'),responseData:{}}).code(200);
     } catch (error) {
         console.log(error);
         await transaction.rollback();

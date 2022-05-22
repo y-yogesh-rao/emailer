@@ -61,8 +61,8 @@ module.exports = [
 	},
 	{
 		method : "GET",
-		path : "/email/getPreBuiltTemplate",
-		handler : emailController.getPreBuiltTemplate,
+		path : "/email/getPreBuiltTemplates",
+		handler : emailController.getPreBuiltTemplates,
 		options: {
 			tags: ["api", "Email"],
 			notes: "Endpoint to list defined email template for portal",

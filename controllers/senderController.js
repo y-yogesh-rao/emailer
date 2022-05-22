@@ -38,15 +38,15 @@ exports.updateSender = async (req,h) => {
         }
 
         let updationObject={lastUpdatedById};
-        if(req.payload.city !== "") updationObject['city']=req.payload.city;
-        if(req.payload.state !== "") updationObject['state']=req.payload.state;
-        if(req.payload.country !== "") updationObject['country']=req.payload.country;
-        if(req.payload.replyTo !== "") updationObject['replyTo']=req.payload.replyTo;
-        if(req.payload.postalCode !== "") updationObject['postalCode']=req.payload.postalCode;
-        if(req.payload.senderName !== "") updationObject['senderName']=req.payload.senderName;
-        if(req.payload.companyName !== "") updationObject['companyName']=req.payload.companyName;
-        if(req.payload.companyAddressLine_1 !== "") updationObject['companyAddressLine_1']=req.payload.companyAddressLine_1;
-        if(req.payload.companyAddressLine_2 !== "") updationObject['companyAddressLine_2']=req.payload.companyAddressLine_2;
+        if(req.payload.city !== null) updationObject['city']=req.payload.city;
+        if(req.payload.state !== null) updationObject['state']=req.payload.state;
+        if(req.payload.country !== null) updationObject['country']=req.payload.country;
+        if(req.payload.replyTo !== null) updationObject['replyTo']=req.payload.replyTo;
+        if(req.payload.postalCode !== null) updationObject['postalCode']=req.payload.postalCode;
+        if(req.payload.senderName !== null) updationObject['senderName']=req.payload.senderName;
+        if(req.payload.companyName !== null) updationObject['companyName']=req.payload.companyName;
+        if(req.payload.companyAddressLine_1 !== null) updationObject['companyAddressLine_1']=req.payload.companyAddressLine_1;
+        if(req.payload.companyAddressLine_2 !== null) updationObject['companyAddressLine_2']=req.payload.companyAddressLine_2;
         
         const updatedSender = await senderExists.update(updationObject,{transaction:transaction});
 

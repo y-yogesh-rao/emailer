@@ -48,18 +48,18 @@ exports.updateRecipient = async (req,h) => {
         }
 
         let updationObject={lastUpdatedById};
-        if(req.payload.city !== "") updationObject['city']=req.payload.city;
-        if(req.payload.state !== "") updationObject['state']=req.payload.state;
-        if(req.payload.gender !== "") updationObject['gender']=req.payload.gender;
-        if(req.payload.country !== "") updationObject['country']=req.payload.country;
-        if(req.payload.dob !== "") updationObject['dob']=Moment(req.payload.dob,'YYYY-MM-DD');
-        if(req.payload.postalCode !== "") updationObject['postalCode']=req.payload.postalCode;
-        if(req.payload.companyName !== "") updationObject['companyName']=req.payload.companyName;
-        if(req.payload.attachmentId !== "") updationObject['attachmentId']=req.payload.attachmentId;
-        if(req.payload.recipientName !== "") updationObject['recipientName']=req.payload.recipientName;
-        if(req.payload.addressLine_1 !== "") updationObject['addressLine_1']=req.payload.addressLine_1;
-        if(req.payload.addressLine_2 !== "") updationObject['addressLine_2']=req.payload.addressLine_2;
-        if(req.payload.alternateRecipientEmail !== "") updationObject['alternateRecipientEmail']=req.payload.alternateRecipientEmail;
+        if(req.payload.city !== null) updationObject['city']=req.payload.city;
+        if(req.payload.state !== null) updationObject['state']=req.payload.state;
+        if(req.payload.gender !== null) updationObject['gender']=req.payload.gender;
+        if(req.payload.country !== null) updationObject['country']=req.payload.country;
+        if(req.payload.dob !== null) updationObject['dob']=Moment(req.payload.dob,'YYYY-MM-DD');
+        if(req.payload.postalCode !== null) updationObject['postalCode']=req.payload.postalCode;
+        if(req.payload.companyName !== null) updationObject['companyName']=req.payload.companyName;
+        if(req.payload.attachmentId !== null) updationObject['attachmentId']=req.payload.attachmentId;
+        if(req.payload.recipientName !== null) updationObject['recipientName']=req.payload.recipientName;
+        if(req.payload.addressLine_1 !== null) updationObject['addressLine_1']=req.payload.addressLine_1;
+        if(req.payload.addressLine_2 !== null) updationObject['addressLine_2']=req.payload.addressLine_2;
+        if(req.payload.alternateRecipientEmail !== null) updationObject['alternateRecipientEmail']=req.payload.alternateRecipientEmail;
 
         if(req.payload.recipientEmail !== null) {
             if(req.payload.recipientEmail !== recipientExists.recipientEmail) {
@@ -102,9 +102,9 @@ exports.deleteRecipient = async (req,h) => {
             return h.response({success:false,message:req.i18n.__('RECIPIENT_NOT_FOUND'),responseData:{}}).code(400);
         }
         
-        const deletedSender = await recipientExists.destroy({where:{id:recipientId}},{transaction:transaction});
+        const deletedRecipient = await recipientExists.destroy({where:{id:recipientId}},{transaction:transaction});
         await transaction.commit();
-        return h.response({success:true,message:req.i18n.__('RECIPIENT_UPDATED_SUCCESSFULLY'),responseData:{deletedSender}}).code(200);
+        return h.response({success:true,message:req.i18n.__('RECIPIENT_DELETED_SUCCESSFULLY'),responseData:{deletedRecipient}}).code(200);
     } catch(error) {
         console.log(error);
         await transaction.rollback();

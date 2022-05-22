@@ -473,19 +473,12 @@ module.exports = [
 			tags: ["api", "User"],
 			notes: "Endpoint to add new user directly",
 			description: "User Sign Up Dierct",
-			auth: {strategy:'jwt'},
+			auth: false,
 			validate: {
-				headers: Joi.object(Common.headers(true)).options({
-					allowUnknown: true
-				}),
 				options: {
 					abortEarly: false
 				},
 				payload: {
-					email: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'EMAIL_IS_REQUIRED')}),
-					password: Joi.string().max(100).required().error(errors=>{return Common.routeError(errors,'PASSWORD_IS_REQUIRED')}),
-					phoneNumber: Joi.string().max(15).required().error(errors=>{return Common.routeError(errors,'PHONE_NUMBER_IS_REQUIRED')}),
-					firstName: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'FIRST_NAME_IS_REQUIRED')}),
 					city: Joi.string().max(250).optional().default(null),
 					state: Joi.string().max(250).optional().default(null),
 					lastName: Joi.string().max(250).optional().default(null),
@@ -494,8 +487,12 @@ module.exports = [
 					organization: Joi.string().max(250).optional().default(null),
 					streetAddress: Joi.string().max(5000).optional().default(null),
 					gender: Joi.string().valid('Male','Female').optional().default(null),
-					dob: Joi.date().min(Moment().format('YYYY-MM-DD')).optional().default(null),
+					dob: Joi.date().max(Moment().format('YYYY-MM-DD')).optional().default(null),
 					websites: Joi.array().items(Joi.string().max(5000)).max(250).optional().default([]),
+					email: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'EMAIL_IS_REQUIRED')}),
+					password: Joi.string().max(100).required().error(errors=>{return Common.routeError(errors,'PASSWORD_IS_REQUIRED')}),
+					firstName: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'FIRST_NAME_IS_REQUIRED')}),
+					phoneNumber: Joi.string().max(15).required().error(errors=>{return Common.routeError(errors,'PHONE_NUMBER_IS_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {
 					return Common.FailureError(err, req);

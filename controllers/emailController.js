@@ -88,7 +88,7 @@ exports.listEmailTemplates = async (req,h) => {
     }
 }
 
-exports.getPreBuiltTemplate = async (req,h) => {
+exports.getPreBuiltTemplates = async (req,h) => {
     try{
         let where = {accountId:1};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;

@@ -10,6 +10,9 @@ var sequelize = new Sequelize(
     },
     host: process.env.MYSQL_HOST,
     dialect: process.env.MYSQL_DIALECT,
+    dialectOptions:{
+      ssl: {rejectUnauthorized:false}
+    },
     port: process.env.MYSQL_PORT,
     operatorsAliases: process.env.OPERATORS_ALIASES,
     pool: {
