@@ -48,18 +48,18 @@ exports.updateRecipient = async (req,h) => {
         }
 
         let updationObject={lastUpdatedById};
-        if(req.payload.city !== null) updationObject['city']=req.payload.city;
-        if(req.payload.state !== null) updationObject['state']=req.payload.state;
-        if(req.payload.gender !== null) updationObject['gender']=req.payload.gender;
-        if(req.payload.country !== null) updationObject['country']=req.payload.country;
-        if(req.payload.dob !== null) updationObject['dob']=Moment(req.payload.dob,'YYYY-MM-DD');
-        if(req.payload.postalCode !== null) updationObject['postalCode']=req.payload.postalCode;
-        if(req.payload.companyName !== null) updationObject['companyName']=req.payload.companyName;
-        if(req.payload.attachmentId !== null) updationObject['attachmentId']=req.payload.attachmentId;
-        if(req.payload.recipientName !== null) updationObject['recipientName']=req.payload.recipientName;
-        if(req.payload.addressLine_1 !== null) updationObject['addressLine_1']=req.payload.addressLine_1;
-        if(req.payload.addressLine_2 !== null) updationObject['addressLine_2']=req.payload.addressLine_2;
-        if(req.payload.alternateRecipientEmail !== null) updationObject['alternateRecipientEmail']=req.payload.alternateRecipientEmail;
+        if(req.payload.city !== "") updationObject['city']=req.payload.city;
+        if(req.payload.state !== "") updationObject['state']=req.payload.state;
+        if(req.payload.gender !== "") updationObject['gender']=req.payload.gender;
+        if(req.payload.country !== "") updationObject['country']=req.payload.country;
+        if(req.payload.dob !== "") updationObject['dob']=Moment(req.payload.dob,'YYYY-MM-DD');
+        if(req.payload.postalCode !== "") updationObject['postalCode']=req.payload.postalCode;
+        if(req.payload.companyName !== "") updationObject['companyName']=req.payload.companyName;
+        if(req.payload.attachmentId !== "") updationObject['attachmentId']=req.payload.attachmentId;
+        if(req.payload.recipientName !== "") updationObject['recipientName']=req.payload.recipientName;
+        if(req.payload.addressLine_1 !== "") updationObject['addressLine_1']=req.payload.addressLine_1;
+        if(req.payload.addressLine_2 !== "") updationObject['addressLine_2']=req.payload.addressLine_2;
+        if(req.payload.alternateRecipientEmail !== "") updationObject['alternateRecipientEmail']=req.payload.alternateRecipientEmail;
 
         if(req.payload.recipientEmail !== null) {
             if(req.payload.recipientEmail !== recipientExists.recipientEmail) {
