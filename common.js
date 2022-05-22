@@ -17,14 +17,14 @@ encrypt = (text) => {
 }
 
 readHTMLFile = (path, callback) => {
-Fs.readFile(path, { encoding: "utf-8" }, function(err, html) {
-  if (err) {
-    throw err;
-    callback(err);
-  } else {
-    callback(null, html);
-  }
-});
+  Fs.readFile(path, { encoding: "utf-8" }, function(err, html) {
+    if (err) {
+      throw err;
+      callback(err);
+    } else {
+      callback(null, html);
+    }
+  });
 };
 
 const getTokenStatus = async (userId) =>{
@@ -33,6 +33,18 @@ const getTokenStatus = async (userId) =>{
 	);
 	return data;
 };
+
+exports.validateApiKeys = async (req,h) => {
+  const apiKey = req.headers?.['x-api-key']
+  if(apiKey !== undefined) {
+    const userFound = await Models.UserSetting.findOne({where:{apiKey},attributes:['id','apiKey','apiKeyName'],include:[
+      {model:Models.User,attributes:['id','email','accountId']}
+    ]});
+    if(!userFound) return {success:false,data:null};
+    return {success:true,data:userFound};
+  }
+  return {success:true,data:null};
+}
 
 exports.prefunction = (req,h) => {
   global.LanguageCodes = process.env.ALL_LANGUAGE_CODE.split(',');
@@ -114,6 +126,7 @@ exports.signToken = tokenData => {
 };
 
 exports.FailureError = (err,req) => {
+  console.log('Something went wrong in failure action')
   const updatedError = err;
 	updatedError.output.payload.message = [];
 	let customMessages = {};
@@ -155,15 +168,19 @@ exports.generateError = (req, type, message, err) => {
     return error;
 }
 
-exports.headers = (authorized) => {
+exports.headers = (authorized,keyRequired=undefined) => {
 	let Globalheaders = {
     language: Joi.string().optional().default(process.env.DEFAULT_LANGUANGE_CODE),
     utcoffset: Joi.string().optional().default(0)
   };
   
-	if (authorized) {
-    _.assign(Globalheaders, {authorization: Joi.string().required().description("Token to identify user who is performing the action")});
-	}
+  if(keyRequired === true) {
+    _.assign(Globalheaders, {'x-api-key': Joi.string().required()});
+  } else if (keyRequired === false) {
+    _.assign(Globalheaders, {'x-api-key': Joi.string().optional()});
+  }
+	if(authorized) _.assign(Globalheaders, {authorization: Joi.string().required()});
+  
 	return Globalheaders;
 };
 
@@ -172,28 +189,31 @@ exports.sendOTP = async (mobile) => {
     return{mobile:mobile,pinId:9999}
 }
 
-exports.sendEmailFromServer = async (to,from,subject,content,replacements,language,template,accountId) => {
-  readHTMLFile(__dirname + "/emails/"+language+'/' + template + ".html", async (err,html) => {
-    let sendto=to.join(',');
-    let template = handlebars.compile(html);
-    let mergeContent = template({content});
-    let templateToSend = handlebars.compile(mergeContent);
-    let htmlToSend = templateToSend(replacements);
-    let mailOptions = {
-      from: from,             // sender address
-      to: sendto,             // list of receivers
-      subject: subject,       // Subject line
-      html: htmlToSend,       // html body
-    };
-    const info = await sendmail(mailOptions);
-    await Models.Email.create({
-      accountId,
-      fromEmail:from,
-      recipients:sendto,
-      content:striptags(htmlToSend),
+exports.sendEmailFromServer = async (to,from,subject,content,replacements,language,template) => {
+  return new Promise((resolve,reject) => {
+    readHTMLFile(__dirname + "/emails/"+language+'/' + template + ".html", async (err,html) => {
+      let sendTo=to.join(',');
+      let template = handlebars.compile(html);
+      let mergeContent = template({content});
+      let templateToSend = handlebars.compile(mergeContent);
+      let htmlToSend = templateToSend(replacements);
+  
+      let mailOptions = {
+        from: from,             // sender address
+        to: sendTo,             // list of receivers
+        subject: subject,       // Subject line
+        html: htmlToSend,       // html body
+      };
+      console.log(mailOptions)
+
+      await sendmail(mailOptions, (error,response) => {
+        if(error) reject(error)
+        let statusCode = response.split(' ')[0];
+        mailOptions = {...mailOptions, statusCode};
+        resolve(mailOptions)
+      });
     });
-    return info;
-  });
+  })
 }
 
 exports.sendEmail = async (to, from, cc, bcc, subject, content, replacements, attachments, language, template) => {

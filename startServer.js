@@ -28,14 +28,14 @@ init = async () => {
     consumes: ["application/json"],
     produces: ["application/json"]
   };
-  await server.register([auth_jwt]);
+  await server.register([ auth_jwt ]);
   server.auth.strategy("jwt", "jwt", {
     complete: true,
-    key: Common.privateKey, // secret key
-    validate: Common.validateToken, // validate function defined in common function for timestamp check
-    verifyOptions: { algorithms: ["HS256"] } // algorithm
+    key: Common.privateKey,                         // secret key
+    validate: Common.validateToken,                 // validate function defined in common function for timestamp check
+    verifyOptions: { algorithms: ["HS256"] }        // algorithm
   });
-  server.auth.default("jwt");
+
   await server.register(
     [
       Inert,

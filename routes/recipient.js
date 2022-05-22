@@ -38,7 +38,7 @@ module.exports = [
 			description: "List Recipients",
 			auth: {strategy: 'jwt', scope: ["admin","user","manage-contacts"]},
 			validate: {
-				headers: Joi.object(Common.headers(true)).options({
+				headers: Joi.object(Common.headers(true,false)).options({
 					allowUnknown: true
 				}),
 				options: {
@@ -56,7 +56,10 @@ module.exports = [
 				},
 				validator: Joi
 			},
-			pre : [{method: Common.prefunction}]
+			pre : [
+				{ method: Common.prefunction },
+				{ method: Common.validateApiKeys, assign:'apiKeyValidation' },
+			]
 		}
 	},
     {
@@ -80,11 +83,14 @@ module.exports = [
 					state: Joi.string().max(250).optional().default(null),
 					country: Joi.string().max(250).optional().default(null),
 					postalCode: Joi.string().max(8).optional().default(null),
+					companyName: Joi.string().max(250).optional().default(null),
 					attachmentId: Joi.number().integer().optional().default(null),
 					addressLine_2: Joi.string().max(5000).optional().default(null),
 					addressLine_1: Joi.string().max(5000).optional().default(null),
 					recipientTypeId: Joi.number().integer().optional().default(null),
+					gender: Joi.string().valid('Male','Female').optional().default(null),
 					alternateRecipientEmail: Joi.string().email().optional().default(null),
+					dob: Joi.date().min(Moment().format('YYYY-MM-DD')).optional().default(null),
 					recipientName: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'SENDER_NAME_IS_REQUIRED')}),
 					recipientEmail: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'RECIPIENT_EMAIL_IS_REQUIRED')}),
 				},
@@ -117,13 +123,16 @@ module.exports = [
 					state: Joi.string().max(250).optional().default(null),
 					country: Joi.string().max(250).optional().default(null),
 					postalCode: Joi.string().max(8).optional().default(null),
+					companyName: Joi.string().max(250).optional().default(null),
 					recipientName: Joi.string().max(250).optional().default(null),
 					attachmentId: Joi.number().integer().optional().default(null),
 					recipientEmail: Joi.string().email().optional().default(null),
                     addressLine_2: Joi.string().max(5000).optional().default(null),
 					addressLine_1: Joi.string().max(5000).optional().default(null),
 					recipientTypeId: Joi.number().integer().optional().default(null),
+					gender: Joi.string().valid('Male','Female').optional().default(null),
 					alternateRecipientEmail: Joi.string().email().optional().default(null),
+					dob: Joi.date().min(Moment().format('YYYY-MM-DD')).optional().default(null),
                     recipientId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'RECIPIENT_ID_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {

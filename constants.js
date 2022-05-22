@@ -4,6 +4,7 @@ module.exports = {
         ACTIVE: 1
     },
     PAGINATION_LIMIT: 20,
+    USER_EMAIL_LIMIT: 50,
     // SMTP: {
     //     ssl:'ssl',
     //     port:'465',
@@ -29,15 +30,15 @@ module.exports = {
             }
         },
         // {
-        //     name: 'fiveMinuteCron',
-        //     time: '*/5 * * * *',
+        //     name: 'oneMinuteCron',
+        //     time: '*/1 * * * *',
         //     timezone: 'Asia/Calcutta',
         //     request: {
         //     method: 'GET',
-        //         url: '/cron/fiveMinuteCron'
+        //         url: '/cron/oneMinuteCron'
         //     },
         //     onComplete: (res) => {
-        //         console.log('------------Cron Job Executed ( Every 5 minutes ) -----------');
+        //         console.log('------------Cron Job Executed ( Every 1 minutes ) -----------');
         //     }
         // }
     ]
