@@ -211,8 +211,11 @@ module.exports = [
             tags: ["api", "Email"],
             notes: "Endpoint to send mail to specified people",
             description:"Send Email",
-            auth: false,
-            validate: {
+            auth: {strategy: 'jwt', scope: ["admin","user","manage-email-templates"]},
+			validate: {
+				headers: Joi.object(Common.headers(true)).options({
+					allowUnknown: true
+				}),
                 options: {
                     abortEarly: false
                 },
