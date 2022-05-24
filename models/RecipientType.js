@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     RecipientType.associate = (models) => {
+      RecipientType.hasMany(models.Recipient, { foreignKey: 'recipientTypeId' })
     }
     
     return RecipientType;

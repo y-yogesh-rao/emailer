@@ -13,7 +13,6 @@ exports.getRecipientTypeDetails = async (req,h) => {
 
 exports.listRecipientTypes = async (req,h) => {
     try {
-        console.log('kkcbksjbkcjs')
         const accountId = req.auth.credentials.userData.User.accountId;
         let where={accountId};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;
@@ -23,9 +22,10 @@ exports.listRecipientTypes = async (req,h) => {
         const orderByParameter = req.query.orderByParameter;
 
         if(req.query.status !== null) where={...where,status:req.query.status};
-        if(req.query.recipientTypeId !== null) where={...where,recipientTypeId:req.query.recipientTypeId};
 
-        let options={where,order:[[orderByParameter,orderByValue]],distinct:true,attributes:{exclude:['deletedAt']}}
+        let options={where,order:[[orderByParameter,orderByValue]],distinct:true,attributes:{exclude:['deletedAt']},include:[
+            {model:Models.Recipient,attributes:['id','recipientName','recipientEmail'],where:{accountId}}
+        ]}
 
         if(req.query.pageNumber !== null) options={...options,limit,offset}
 
@@ -54,7 +54,7 @@ exports.addRecipientType = async (req,h) => {
 
         const name = req.payload.name;
         const recipientTypeExists = await Models.RecipientType.findOne({where:{name,accountId}});
-        if(!recipientTypeExists) {
+        if(recipientTypeExists) {
             await transaction.rollback();
             return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_ALREADY_EXISTS'),responseData:{}}).code(400);
         }

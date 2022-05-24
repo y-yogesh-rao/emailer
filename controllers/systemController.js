@@ -117,25 +117,25 @@ exports.initializeSystem = async (req,h) => {
                 country: 'India',
                 recipientName:'Indian Friend',
                 recipientEmail:'indian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,
+                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:1
             },
             {
                 country: 'Russia',
                 recipientName:'Russian Friend',
                 recipientEmail:'russian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,
+                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:2
             },
             {
                 country: 'Canada',
                 recipientName:'Canadan Friend',
                 recipientEmail:'canadian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,
+                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:3
             },
             {
                 country: 'Australia',
                 recipientName:'Australian Friend',
                 recipientEmail:'australian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,
+                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:4
             },
         ],{transaction:transaction});
 

@@ -69,6 +69,9 @@ module.exports = [
 			description:"List email templates",
 			auth: false,
 			validate: {
+				headers: Joi.object(Common.headers()).options({
+					allowUnknown: true
+				}),
 				options: {
 					abortEarly: false
 				},
@@ -211,11 +214,8 @@ module.exports = [
             tags: ["api", "Email"],
             notes: "Endpoint to send mail to specified people",
             description:"Send Email",
-            auth: {strategy: 'jwt', scope: ["admin","user","manage-email-templates"]},
-			validate: {
-				headers: Joi.object(Common.headers(true)).options({
-					allowUnknown: true
-				}),
+            auth: false,
+            validate: {
                 options: {
                     abortEarly: false
                 },

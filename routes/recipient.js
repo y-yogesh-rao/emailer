@@ -48,6 +48,7 @@ module.exports = [
 					status: Joi.number().valid(0,1).optional().default(null),
 					pageNumber: Joi.number().integer().optional().default(null),
 					limit: Joi.number().integer().min(0).max(50).optional().default(null),
+					recipientTypeId: Joi.number().integer().min(0).optional().default(null),
 					orderByValue: Joi.string().allow('ASC','DESC').optional().default('DESC'),
 					orderByParameter: Joi.string().allow('createdAt','id','recipientEmail','recipientName','recipientTypeId','postalCode').optional().default('createdAt'),
 				},

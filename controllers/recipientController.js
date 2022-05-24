@@ -133,6 +133,7 @@ exports.listRecipients = async (req,h) => {
         const orderByParameter = req.query.orderByParameter;
 
         if(req.query.status !== null) where={...where,status:req.query.status};
+        if(req.query.recipientTypeId !== null) where={...where,recipientTypeId:req.query.recipientTypeId};
 
         let options={where,order:[[orderByParameter,orderByValue]],distinct:true,attributes:{exclude:['deletedAt']},include:[
             {model:Models.RecipientType,attributes:{exclude:['deletedAt']}}

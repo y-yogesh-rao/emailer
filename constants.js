@@ -5,6 +5,13 @@ module.exports = {
     },
     PAGINATION_LIMIT: 20,
     USER_EMAIL_LIMIT: 50,
+    // SMTP: {
+    //     ssl:'ssl',
+    //     port:'465',
+    //     host:'93.188.167.79',
+    //     password:'Hq()1kAi<`[kb8764',
+    //     username:'support@climechime.com',
+    // },
     ROLE: {
         ADMIN: 1,
         USER: 2
