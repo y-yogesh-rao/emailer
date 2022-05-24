@@ -89,6 +89,7 @@ exports.convertOffsetMinuteToOffsetString = async (offsetInMinutes) => {
 
 exports.validateToken = async (token) => {
   fetchtoken = JSON.parse(decrypt(token.data));
+  console.log(fetchToken)
   var diff = Moment().diff(Moment(token.iat * 1000));
   var userId = fetchtoken && fetchtoken.User && fetchtoken.User.id ? fetchtoken.User.id : 0;
   var userTokenStatus = fetchtoken && fetchtoken.User && fetchtoken.User.tokenStatus ? fetchtoken.User.tokenStatus : 0;

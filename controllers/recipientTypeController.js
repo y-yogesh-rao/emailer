@@ -13,6 +13,7 @@ exports.getRecipientTypeDetails = async (req,h) => {
 
 exports.listRecipientTypes = async (req,h) => {
     try {
+        console.log('kkcbksjbkcjs')
         const accountId = req.auth.credentials.userData.User.accountId;
         let where={accountId};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;
@@ -22,6 +23,7 @@ exports.listRecipientTypes = async (req,h) => {
         const orderByParameter = req.query.orderByParameter;
 
         if(req.query.status !== null) where={...where,status:req.query.status};
+        if(req.query.recipientTypeId !== null) where={...where,recipientTypeId:req.query.recipientTypeId};
 
         let options={where,order:[[orderByParameter,orderByValue]],distinct:true,attributes:{exclude:['deletedAt']}}
 
@@ -57,7 +59,7 @@ exports.addRecipientType = async (req,h) => {
             return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_ALREADY_EXISTS'),responseData:{}}).code(400);
         }
 
-        let createdRecipientType = await Models.Recipient.create({createdById,accountId,lastUpdatedById,name},{transaction:transaction});
+        let createdRecipientType = await Models.RecipientType.create({createdById,accountId,lastUpdatedById,name},{transaction:transaction});
         delete createdRecipientType.dataValues.deletedAt;
 
         await transaction.commit();
