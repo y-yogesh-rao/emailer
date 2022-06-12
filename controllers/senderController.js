@@ -104,6 +104,7 @@ exports.listSenders = async (req,h) => {
             totalRecords: senders.count,
             baseUrl: process.env.NODE_SERVER_PUBLIC_API
         }
+        console.log('Response: ', responseData);
         return h.response({success:true,message:req.i18n.__('REQUEST_SUCCESSFUL'),responseData:responseData}).code(200);
     } catch(error) {
         console.log(error);

@@ -107,9 +107,9 @@ module.exports = [
 					abortEarly: false
 				},
 				payload: {
+					subject : Joi.string().optional().default(null),
 					replacements : Joi.string().optional().default(null),
                     code : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_CODE_IS_REQUIRED')}),
-					subject : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_SUBJECT_IS_REQUIRED')}),
 					content : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_CONTENT_IS_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {
@@ -167,7 +167,7 @@ module.exports = [
 				},
 				payload: {
 					replacements : Joi.string().optional(),
-					subject : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_SUBJECT_IS_REQUIRED')}),
+					subject : Joi.string().optional().default(null),
 					content : Joi.string().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_CONTENT_IS_REQUIRED')}),
 					emailTemplateId: Joi.number().required().error(errors=>{return Common.routeError(errors,'EMAIL_TEMPLATE_ID_IS_REQUIRED')}),
 				},
@@ -214,8 +214,11 @@ module.exports = [
             tags: ["api", "Email"],
             notes: "Endpoint to send mail to specified people",
             description:"Send Email",
-            auth: false,
+            auth: {strategy:'jwt'},
             validate: {
+				headers: Joi.object(Common.headers(false,false)).options({
+					allowUnknown: true
+				}),
                 options: {
                     abortEarly: false
                 },
@@ -230,7 +233,10 @@ module.exports = [
                 },
                 validator: Joi
             },
-            pre : [{method: Common.prefunction}]
+            pre : [
+				{ method: Common.prefunction },
+				{ method: Common.validateApiKeys, assign:'apiKeyValidation' },
+			]
         }
     },
 ]

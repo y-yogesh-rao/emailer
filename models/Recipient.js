@@ -14,19 +14,19 @@ module.exports = (sequelize, DataTypes) => {
         createdById: { type: DataTypes.INTEGER, defaultValue: null },
         attachmentId: { type: DataTypes.INTEGER, defaultValue: null },
         lastUpdatedById: { type: DataTypes.INTEGER, defaultValue: null },
-        recipientTypeId: { type: DataTypes.INTEGER, defaultValue: null },
         dob: { type: DataTypes.DATE, defaultValue: null },
         city: { type: DataTypes.STRING, defaultValue: null },
         state: { type: DataTypes.STRING, defaultValue: null },
         gender: { type: DataTypes.STRING, defaultValue: null },
         country: { type: DataTypes.STRING, defaultValue: null },
+        firstName: { type: DataTypes.STRING, allowNull: false },
+        lastName: { type: DataTypes.STRING, defaultValue: null },
         postalCode: { type: DataTypes.STRING, defaultValue: null },
         companyName: { type: DataTypes.STRING, defaultValue: null },
         addressLine_1: { type: DataTypes.TEXT, defaultValue: null },
         addressLine_2: { type: DataTypes.TEXT, defaultValue: null },
-        recipientName: { type: DataTypes.STRING, allowNull: false },
         recipientEmail: { type: DataTypes.STRING, allowNull: false },
-        alternateRecipientEmail: { type: DataTypes.STRING, defaultValue: null },
+        alternateEmail: { type: DataTypes.STRING, defaultValue: null },
         status: { type: DataTypes.INTEGER, defaultValue: Constants.STATUS.ACTIVE },
       },
       {
@@ -37,10 +37,10 @@ module.exports = (sequelize, DataTypes) => {
 
     Recipient.associate = (models) => {
         Recipient.belongsTo(models.Attachment, { foreignKey: 'attachmentId' });
-        Recipient.belongsTo(models.RecipientType, { foreignKey: 'recipientTypeId' });
         Recipient.belongsTo(models.User, { foreignKey: 'accountId', as: 'Account' });
         Recipient.belongsTo(models.User, { foreignKey: 'createdById', as: 'CreatedBy' });
         Recipient.belongsTo(models.User, { foreignKey: 'lastUpdatedById', as: 'LastUpdatedBy' });
+        Recipient.belongsToMany(models.List, { through: 'recipient_lists', foreignKey: 'recipientId', otherKey: 'listId' });
     }
     
     return Recipient;

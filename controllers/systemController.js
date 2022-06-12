@@ -103,11 +103,12 @@ exports.initializeSystem = async (req,h) => {
 
         // --------------------------------------------- CREATING RECIPIENT TYPES ------------------------------------------
 
-        await Models.RecipientType.bulkCreate([
+        const createdList = await Models.List.bulkCreate([
             {createdById:2,lastUpdatedById:2,accountId:2,name:'India'},
             {createdById:2,lastUpdatedById:2,accountId:2,name:'Russia'},
             {createdById:2,lastUpdatedById:2,accountId:2,name:'Canada'},
             {createdById:2,lastUpdatedById:2,accountId:2,name:'Australia'},
+            {createdById:2,lastUpdatedById:2,accountId:2,name:'International'},
         ],{transaction:transaction});
 
         // --------------------------------------------- CREATING RECIPIENTS ------------------------------------------
@@ -115,29 +116,40 @@ exports.initializeSystem = async (req,h) => {
         await Models.Recipient.bulkCreate([
             {
                 country: 'India',
-                recipientName:'Indian Friend',
+                lastName:'Friend',
+                firstName:'Indian',
                 recipientEmail:'indian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:1
+                createdById:2,lastUpdatedById:2,accountId:2
             },
             {
                 country: 'Russia',
-                recipientName:'Russian Friend',
+                lastName:'Friend',
+                firstName:'Russian',
                 recipientEmail:'russian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:2
+                createdById:2,lastUpdatedById:2,accountId:2
             },
             {
                 country: 'Canada',
-                recipientName:'Canadan Friend',
+                lastName:'Friend',
+                firstName:'Canadian',
                 recipientEmail:'canadian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:3
+                createdById:2,lastUpdatedById:2,accountId:2
             },
             {
                 country: 'Australia',
-                recipientName:'Australian Friend',
+                lastName:'Friend',
+                firstName:'Australian',
                 recipientEmail:'australian@yopmail.com',
-                createdById:2,lastUpdatedById:2,accountId:2,recipientTypeId:4
+                createdById:2,lastUpdatedById:2,accountId:2
             },
         ],{transaction:transaction});
+
+        await createdList[0].setRecipients([1],{transaction:transaction});
+        await createdList[1].setRecipients([2],{transaction:transaction});
+        await createdList[2].setRecipients([3],{transaction:transaction});
+        await createdList[3].setRecipients([4],{transaction:transaction});
+        await createdList[4].setRecipients([2,3,4],{transaction:transaction});
+
 
         // --------------------------------------------- CREATING SENDERS ------------------------------------------
 

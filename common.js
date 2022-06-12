@@ -1,26 +1,21 @@
-exports.privateKey='ABCDEFGHIJKLMNOPQRSTUVWXYZ123456';
-exports.algorithm="aes-256-cbc";
-exports.iv='QWERTY1234567890';
-
 decrypt = (text) => {
-  let decipher = crypto.createDecipheriv(this.algorithm, this.privateKey, this.iv);
+  let decipher = crypto.createDecipheriv(process.env.ALGORITHM, process.env.PRIVATE_KEY, process.env.IV);
   let decrypted = decipher.update(text, "hex", "utf8");
   decrypted = decrypted + decipher.final("utf8");
   return decrypted;
 }
 
 encrypt = (text) => {
-  let cipher = crypto.createCipheriv(this.algorithm,this.privateKey, this.iv);
+  let cipher = crypto.createCipheriv(process.env.ALGORITHM, process.env.PRIVATE_KEY, process.env.IV);
   let encrypted =cipher.update(text, "utf8", "hex");
   encrypted = encrypted + cipher.final("hex");
   return encrypted;
 }
 
 readHTMLFile = (path, callback) => {
-  Fs.readFile(path, { encoding: "utf-8" }, function(err, html) {
+  Fs.readFile(path, { encoding: "utf-8" }, (err, html) => {
     if (err) {
       throw err;
-      callback(err);
     } else {
       callback(null, html);
     }
@@ -48,7 +43,7 @@ exports.validateApiKeys = async (req,h) => {
 
 exports.prefunction = (req,h) => {
   global.LanguageCodes = process.env.ALL_LANGUAGE_CODE.split(',');
-  global.LanguageIds = process.env.ALL_LANGUAGE_ID.split(',').map(function(item) {
+  global.LanguageIds = process.env.ALL_LANGUAGE_ID.split(',').map((item) => {
     return parseInt(item, 10);
   });
   global.utcOffset = req.headers.utcoffset;
@@ -121,12 +116,11 @@ exports.validateToken = async (token) => {
 exports.signToken = tokenData => {
     return Jwt.sign(
       { data: encrypt(JSON.stringify(tokenData))},
-      this.privateKey
+      process.env.PRIVATE_KEY
     );
 };
 
 exports.FailureError = (err,req) => {
-  console.log('Something went wrong in failure action')
   const updatedError = err;
 	updatedError.output.payload.message = [];
 	let customMessages = {};

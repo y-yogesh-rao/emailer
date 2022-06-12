@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
         languageId: { type: DataTypes.INTEGER, allowNull: false, unique: 'uniqueLanguage' },
         emailTemplateId: { type: DataTypes.INTEGER, allowNull: false, unique: 'uniqueLanguage' },
         content: { type: DataTypes.TEXT, allowNull: false },
-        subject: { type: DataTypes.TEXT, allowNull: false },
+        subject: { type: DataTypes.TEXT, defaultValue: null },
         replacements: { type: DataTypes.TEXT, defaultValue: null },
       },
       {

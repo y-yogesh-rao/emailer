@@ -31,7 +31,7 @@ init = async () => {
   await server.register([ auth_jwt ]);
   server.auth.strategy("jwt", "jwt", {
     complete: true,
-    key: Common.privateKey,                         // secret key
+    key: process.env.PRIVATE_KEY,                         // secret key
     validate: Common.validateToken,                 // validate function defined in common function for timestamp check
     verifyOptions: { algorithms: ["HS256"] }        // algorithm
   });

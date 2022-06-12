@@ -76,6 +76,7 @@ module.exports = [
 					abortEarly: false
 				},
 				payload: {
+					recipients: Joi.array().items(Joi.number().integer()).optional().default([]),
 					name: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'RECIPIENT_TYPE_NAME_IS_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {
@@ -104,6 +105,7 @@ module.exports = [
 				},
 				payload: {
                     name: Joi.string().max(250).allow("").optional().default(null),
+					recipients: Joi.array().items(Joi.number().integer()).optional().default([]),
                     recipientTypeId: Joi.number().integer().required().error(errors=>{return Common.routeError(errors,'RECIPIENT_TYPE_ID_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {

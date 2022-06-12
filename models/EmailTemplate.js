@@ -25,8 +25,8 @@ module.exports = (sequelize, DataTypes) => {
     
     EmailTemplate.associate = (models) => {
       EmailTemplate.belongsTo(models.User, { foreignKey: "accountId", as: "Account" });
-      EmailTemplate.hasMany(models.Email, { foreignKey: "emailTemplateId",onDelete: 'cascade', hooks:true });
       EmailTemplate.hasMany(models.EmailTemplateContent, { foreignKey: "emailTemplateId", onDelete: 'cascade' });
+      EmailTemplate.hasMany(models.EmailCampaignRecipient, { foreignKey: "emailTemplateId",onDelete: 'cascade', hooks:true });
       EmailTemplate.hasMany(models.EmailTemplateContent, { foreignKey: "emailTemplateId", onDelete: 'cascade', hooks:true, as:"mainContent" });
       EmailTemplate.hasMany(models.EmailTemplateContent, { foreignKey: "emailTemplateId", onDelete: 'cascade', hooks:true, as:"defaultContent" });
     };

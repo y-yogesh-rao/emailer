@@ -239,10 +239,9 @@ exports.deleteEmailTemplate = async (req,h) => {
     const transaction = await Models.sequelize.transaction();
     try{
         let emailTemplateId = req.payload.emailTemplateId;
-        let doExists = await Models.EmailTemplate.findOne({where:{id:emailTemplateId},include:[{model:Models.EmailTemplate}]});
+        let doExists = await Models.EmailTemplateContent.findOne({where:{id:emailTemplateId},include:[{model:Models.EmailTemplate}]});
         if(doExists) {
             let deleteEmailTemplate = await doExists.destroy({where:{id:emailTemplateId},transaction:transaction});
-            await Models.EmailTemplateContent.destroy({where:{emailTemplateId:doExists.emailTemplateId},transaction:transaction});
             await transaction.commit();
             return h.response({success:false,message:req.i18n.__("EMAIL_TEMPLATE_DELETED_SUCCESSFULLY"),responseData:{deleteEmailTemplate}}).code(200);
         } else {
@@ -360,18 +359,46 @@ exports.sendMailToRecipients = async (req,h) => {
 }
 
 exports.sendEmail = async (req,h) => {
+    const transaction = await Models.sequelize.transaction;
     try {
+        let accountId;
+        if(req.auth?.credentials?.userData) accountId = req.auth.credentials.userData.User.accountId;
+
+        const preValues = req.pre;
+        if(!preValues?.apiKeyValidation?.success) {
+            await transaction.rolllback();
+            return h.response({success:false,message:req.i18n.__('INVALUD_API_KEY_RPOVIDED'),responseData:{}}).code(401);
+        } else {
+            if(preValues?.apiKeyValidation?.data?.User?.accountId) accountId = preValues?.apiKeyValidation?.data?.User?.accountId;
+        }
+
+        let message = null;
+        let statusCode = 200;
+        let successStatus = true;
+        let emailDelivered = true;
         const {from,to,subject,html} = req.payload;
         const mailOptions = {from,to,subject,html};
-        await sendmail(mailOptions,(error,response) => {
-            if(error) return h.response({success:true,message:req.i18n.__('SOMETHING_WENT_WRONG_WHILE_SENDING_EMAIL'),responseData:{}}).code(500);
+        await sendmail(mailOptions, async (error,response) => {
+            if(error) {
+                await transaction.rollback();
+                return h.response({success:true,message:req.i18n.__('SOMETHING_WENT_WRONG_WHILE_SENDING_EMAIL'),responseData:{}}).code(500);
+            }
             let statusCode = response.split(' ')[0];
             if(parseInt(statusCode) === 221) {
-                return h.response({success:true,message:req.i18n.__('EMAIL_SENT_SUCCESSULLY'),responseData:{}}).code(200);
+                message = 'EMAIL_SENT_SUCCESSULLY';
             } else {
-                return h.response({success:true,message:req.i18n.__('FAILED_TO_SEND_EMAIL'),responseData:{}}).code(500);
+                statusCode = 500;
+                successStatus = false;
+                emailDelivered = false;
+                message = 'FAILED_TO_SEND_EMAIL';
             }
         });
+
+        let emailStatus = successStatus ? Constants.EMAIL_CAMPAIGN_STATUS.SENT : Constants.EMAIL_CAMPAIGN_STATUS.SUSPENDED;
+        await Models.DirectEmail.create({accountId,subject,content:html,recipients:to,fromEmail:from,status:emailStatus},{transaction:transaction});
+
+        await transaction.commit();
+        return h.response({success:successStatus,message:req.i18n.__(message),responseData:{}}).code(statusCode);
     } catch(error) {
         console.log(error);
         return h.response({success:false,message:req.i18n.__('SOMETHING_WENT_WRONG'),responseData:{}}).code(500);

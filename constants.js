@@ -5,6 +5,14 @@ module.exports = {
     },
     PAGINATION_LIMIT: 20,
     USER_EMAIL_LIMIT: 50,
+    EMAIL_CAMPAIGN_STATUS: {
+        DRAFT: 0,
+        SENT: 1,
+        SCHEDULED: 2,
+        RUNNING: 3,
+        SUSPENDED: 4,
+        ARCHIVED: 5,
+    },
     // SMTP: {
     //     ssl:'ssl',
     //     port:'465',

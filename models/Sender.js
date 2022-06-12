@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         companyName: { type: DataTypes.STRING, defaultValue: null },
         companyAddressLine_1: { type: DataTypes.TEXT, defaultValue: null },
         companyAddressLine_2: { type: DataTypes.TEXT, defaultValue: null },
-        status: { type: DataTypes.INTEGER, defaultValue: Constants.STATUS.ACTIVE },
+        status: { type: DataTypes.INTEGER, defaultValue: Constants.STATUS.INACTIVE },
       },
       {
         underscored: true,

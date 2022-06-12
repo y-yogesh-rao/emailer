@@ -483,6 +483,7 @@ module.exports = [
 					state: Joi.string().max(250).optional().default(null),
 					lastName: Joi.string().max(250).optional().default(null),
 					postalCode: Joi.string().max(250).optional().default(null),
+					phoneNumber: Joi.string().max(15).optional().default(null),
 					newsletter: Joi.string().max(5000).optional().default(null),
 					organization: Joi.string().max(250).optional().default(null),
 					streetAddress: Joi.string().max(5000).optional().default(null),
@@ -492,7 +493,6 @@ module.exports = [
 					email: Joi.string().email().required().error(errors=>{return Common.routeError(errors,'EMAIL_IS_REQUIRED')}),
 					password: Joi.string().max(100).required().error(errors=>{return Common.routeError(errors,'PASSWORD_IS_REQUIRED')}),
 					firstName: Joi.string().max(250).required().error(errors=>{return Common.routeError(errors,'FIRST_NAME_IS_REQUIRED')}),
-					phoneNumber: Joi.string().max(15).required().error(errors=>{return Common.routeError(errors,'PHONE_NUMBER_IS_REQUIRED')}),
 				},
 				failAction: async (req, h, err) => {
 					return Common.FailureError(err, req);

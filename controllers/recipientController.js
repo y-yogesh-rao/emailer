@@ -5,15 +5,9 @@ exports.addRecipient = async (req,h) => {
         const accountId = req.auth.credentials.userData.User.accountId;
         const lastUpdatedById = createdById;
         const attachmentId = req.payload.attachmentId;
-        const recipientTypeId = req.payload.recipientTypeId;
+        const recipientTypes = req.payload.recipientTypes;
 
-        const recipientTypeExists = await Models.RecipientType.findOne({where:{id:recipientTypeId}});
-        if(!recipientTypeExists) {
-            await transaction.rollback();
-            return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_NOT_FOUND'),responseData:{}}).code(400);
-        }
-
-        let {recipientEmail,recipientName,alternateRecipientEmail,country,city,state,postalCode,addressLine_1,addressLine_2,gender,dob,companyName} = req.payload;
+        let {recipientEmail,firstName,lastName,alternateEmail,country,city,state,postalCode,addressLine_1,addressLine_2,gender,dob,companyName} = req.payload;
         const recipientExists = await Models.Recipient.findOne({where:{recipientEmail,accountId}});
         if(recipientExists) {
             await transaction.rollback();
@@ -22,9 +16,10 @@ exports.addRecipient = async (req,h) => {
 
         if(dob !== null) dob = Moment(dob,'YYYY-MM-DD');
         const addedRecipient = await Models.Recipient.create({
-            createdById,accountId,lastUpdatedById,recipientEmail,recipientName,alternateRecipientEmail,country,city,state,postalCode,addressLine_1,
-            addressLine_2,recipientTypeId,attachmentId,dob,gender,companyName
+            createdById,accountId,lastUpdatedById,recipientEmail,firstName,lastName,alternateEmail,country,city,state,postalCode,addressLine_1,
+            addressLine_2,attachmentId,dob,gender,companyName
         },{transaction:transaction});
+        await addedRecipient.setLists(recipientTypes,{transaction:transaction});
 
         await transaction.commit();
         return h.response({success:true,message:req.i18n.__('RECIPIENT_ADDED_SUCCESSFULLY'),responseData:{addedRecipient}}).code(201);
@@ -52,14 +47,16 @@ exports.updateRecipient = async (req,h) => {
         if(req.payload.state !== null) updationObject['state']=req.payload.state;
         if(req.payload.gender !== null) updationObject['gender']=req.payload.gender;
         if(req.payload.country !== null) updationObject['country']=req.payload.country;
+        if(req.payload.lastName !== null) updationObject['lastName']=req.payload.lastName;
+        if(req.payload.firstName !== null) updationObject['firstName']=req.payload.firstName;
         if(req.payload.dob !== null) updationObject['dob']=Moment(req.payload.dob,'YYYY-MM-DD');
         if(req.payload.postalCode !== null) updationObject['postalCode']=req.payload.postalCode;
         if(req.payload.companyName !== null) updationObject['companyName']=req.payload.companyName;
         if(req.payload.attachmentId !== null) updationObject['attachmentId']=req.payload.attachmentId;
-        if(req.payload.recipientName !== null) updationObject['recipientName']=req.payload.recipientName;
         if(req.payload.addressLine_1 !== null) updationObject['addressLine_1']=req.payload.addressLine_1;
         if(req.payload.addressLine_2 !== null) updationObject['addressLine_2']=req.payload.addressLine_2;
-        if(req.payload.alternateRecipientEmail !== null) updationObject['alternateRecipientEmail']=req.payload.alternateRecipientEmail;
+        if(req.payload.alternateEmail !== null) updationObject['alternateEmail']=req.payload.alternateEmail;
+        if(req.payload.recipientTypes.length > 0) await recipientExists.setLists(req.payload.recipientTypes,{transaction:transaction});
 
         if(req.payload.recipientEmail !== null) {
             if(req.payload.recipientEmail !== recipientExists.recipientEmail) {
@@ -72,17 +69,7 @@ exports.updateRecipient = async (req,h) => {
             }
         }
 
-        if(req.payload.recipientTypeId !== null) {
-            const recipientTypeExists = await Models.RecipientType.findOne({where:{id:req.payload.recipientTypeId}});
-            if(!recipientTypeExists) {
-                await transaction.rollback();
-                return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_NOT_FOUND'),responseData:{}}).code(400);
-            }
-            updationObject['recipientTypeId']=req.payload.recipientTypeId;
-        }
-        
         const updatedRecipient = await recipientExists.update(updationObject,{transaction:transaction});
-
         await transaction.commit();
         return h.response({success:true,message:req.i18n.__('RECIPIENT_UPDATED_SUCCESSFULLY'),responseData:{updatedRecipient}}).code(200);
     } catch(error) {
@@ -102,6 +89,7 @@ exports.deleteRecipient = async (req,h) => {
             return h.response({success:false,message:req.i18n.__('RECIPIENT_NOT_FOUND'),responseData:{}}).code(400);
         }
         
+        await recipientExists.setLists([],{transaction:transaction});
         const deletedRecipient = await recipientExists.destroy({where:{id:recipientId}},{transaction:transaction});
         await transaction.commit();
         return h.response({success:true,message:req.i18n.__('RECIPIENT_DELETED_SUCCESSFULLY'),responseData:{deletedRecipient}}).code(200);
@@ -124,19 +112,19 @@ exports.listRecipients = async (req,h) => {
             if(preValues?.apiKeyValidation?.data?.User?.accountId) accountId = preValues?.apiKeyValidation?.data?.User?.accountId;
         }
         
+        let listWhere={};
         let where={accountId};
         const limit = req.query.limit !== null ? req.query.limit : Constants.PAGINATION_LIMIT;
         const offset = (req.query.pageNumber-1) * limit;
-
 
         const orderByValue = req.query.orderByValue;
         const orderByParameter = req.query.orderByParameter;
 
         if(req.query.status !== null) where={...where,status:req.query.status};
-        if(req.query.recipientTypeId !== null) where={...where,recipientTypeId:req.query.recipientTypeId};
+        if(req.query.recipientTypeId !== null) listWhere={...listWhere,listId:req.query.recipientTypeId};
 
         let options={where,order:[[orderByParameter,orderByValue]],distinct:true,attributes:{exclude:['deletedAt']},include:[
-            {model:Models.RecipientType,attributes:{exclude:['deletedAt']}}
+            {model:Models.List,through:{attributes:[],where:listWhere},attributes:['id','name'],required:true}
         ]}
 
         if(req.query.pageNumber !== null) options={...options,limit,offset}
@@ -161,8 +149,8 @@ exports.getRecipientDetails = async (req,h) => {
     try {
         const recipientId = req.query.recipientId;
         const responseData = await Models.Recipient.findOne({where:{id:recipientId},attributes:{exclude:['deletedAt']},include:[
+            {model:Models.List,attributes:{exclude:['deletedAt']}},
             {model:Models.Attachment,attributes:{exclude:['deletedAt']}},
-            {model:Models.RecipientType,attributes:{exclude:['deletedAt']}},
             {model:Models.User,as:'Account',attributes:['id','email','phoneNumber'],include:{model:Models.UserProfile,attributes:['firstName','lastName','dob','gender'],include:{model:Models.Attachment,attributes:{exclude:['deletedAt']}}}},
             {model:Models.User,as:'CreatedBy',attributes:['id','email','phoneNumber'],include:{model:Models.UserProfile,attributes:['firstName','lastName','dob','gender'],include:{model:Models.Attachment,attributes:{exclude:['deletedAt']}}}},
             {model:Models.User,as:'LastUpdatedBy',attributes:['id','email','phoneNumber'],include:{model:Models.UserProfile,attributes:['firstName','lastName','dob','gender'],include:{model:Models.Attachment,attributes:{exclude:['deletedAt']}}}},

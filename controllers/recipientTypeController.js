@@ -2,7 +2,7 @@ exports.getRecipientTypeDetails = async (req,h) => {
     try {
         const recipientTypeId = req.query.recipientTypeId;
 
-        const responseData = await Models.RecipientType.findOne({where:{id:recipientTypeId},attributes:{exclude:['deletedAt']}})
+        const responseData = await Models.List.findOne({where:{id:recipientTypeId},attributes:{exclude:['deletedAt']}})
 
         return h.response({success:true,message:req.i18n.__('REQUEST_SUCCESSFUL'),responseData:responseData}).code(200);
     } catch(error) {
@@ -24,12 +24,12 @@ exports.listRecipientTypes = async (req,h) => {
         if(req.query.status !== null) where={...where,status:req.query.status};
 
         let options={where,order:[[orderByParameter,orderByValue]],distinct:true,attributes:{exclude:['deletedAt']},include:[
-            {model:Models.Recipient,attributes:['id','recipientName','recipientEmail'],where:{accountId}}
+            {model:Models.Recipient,through:{attributes:[]},attributes:['id','firstName','lastName','recipientEmail']}
         ]}
 
         if(req.query.pageNumber !== null) options={...options,limit,offset}
 
-        const recipientTypes = await Models.RecipientType.findAndCountAll(options);
+        const recipientTypes = await Models.List.findAndCountAll(options);
         const totalPages = await Common.getTotalPages(recipientTypes.count,limit);
         const responseData = {
             totalPages,
@@ -53,13 +53,15 @@ exports.addRecipientType = async (req,h) => {
         const lastUpdatedById = createdById;
 
         const name = req.payload.name;
-        const recipientTypeExists = await Models.RecipientType.findOne({where:{name,accountId}});
+        const recipients = req.payload.recipients;
+        const recipientTypeExists = await Models.List.findOne({where:{name,accountId}});
         if(recipientTypeExists) {
             await transaction.rollback();
             return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_ALREADY_EXISTS'),responseData:{}}).code(400);
         }
 
-        let createdRecipientType = await Models.RecipientType.create({createdById,accountId,lastUpdatedById,name},{transaction:transaction});
+        let createdRecipientType = await Models.List.create({createdById,accountId,lastUpdatedById,name},{transaction:transaction});
+        await createdRecipientType.setRecipients(recipients,{transaction:transaction});
         delete createdRecipientType.dataValues.deletedAt;
 
         await transaction.commit();
@@ -77,7 +79,7 @@ exports.updateRecipientType = async (req,h) => {
         const lastUpdatedById = req.auth.credentials.userData.User.id;
 
         const recipientTypeId = req.payload.recipientTypeId;
-        const recipientTypeExists = await Models.RecipientType.findOne({where:{id:recipientTypeId},attributes:{exclude:['deletedAt']}});
+        const recipientTypeExists = await Models.List.findOne({where:{id:recipientTypeId},attributes:{exclude:['deletedAt']}});
         if(!recipientTypeExists) {
             await transaction.rollback();
             return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_NOT_FOUND'),responseData:{}}).code(400);
@@ -86,9 +88,9 @@ exports.updateRecipientType = async (req,h) => {
         let updationObject={lastUpdatedById};
         if(req.payload.name !== null) updationObject['name']=req.payload.name;
         if(req.payload.status !== null) updationObject['status']=req.payload.status;
+        if(req.payload.recipients.length > 0) await recipientTypeExists.setRecipients(req.payload.recipients,{transaction:transaction});
         
         const updatedRecipientType = await recipientTypeExists.update(updationObject,{transaction:transaction});
-
         await transaction.commit();
         return h.response({success:true,message:req.i18n.__('RECIPIENT_TYPE_UPDATED_SUCCESSFULLY'),responseData:{updatedRecipientType}}).code(200);
     } catch(error) {
@@ -102,12 +104,13 @@ exports.deleteRecipientType = async (req,h) => {
     const transaction = await Models.sequelize.transaction();
     try {
         const recipientTypeId = req.payload.recipientTypeId;
-        const recipientTypeExists = await Models.RecipientType.findOne({where:{id:recipientTypeId},attributes:{exclude:['deletedAt']}});
+        const recipientTypeExists = await Models.List.findOne({where:{id:recipientTypeId},attributes:{exclude:['deletedAt']}});
         if(!recipientTypeExists) {
             await transaction.rollback();
             return h.response({success:false,message:req.i18n.__('RECIPIENT_TYPE_NOT_FOUND'),responseData:{}}).code(400);
         }
         
+        await recipientTypeExists.setRecipients([],{transaction:transaction});
         const deletedRecipientType = await recipientTypeExists.destroy({where:{id:recipientTypeId}},{transaction:transaction});
         await transaction.commit();
         return h.response({success:true,message:req.i18n.__('RECIPIENT_TYPE_DELETED_SUCCESSFULLY'),responseData:{deletedRecipientType}}).code(200);

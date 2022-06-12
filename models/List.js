@@ -3,7 +3,7 @@
 const Constants = require('../constants');
 
 module.exports = (sequelize, DataTypes) => {
-    let RecipientType = sequelize.define("RecipientType", {
+    let List = sequelize.define("List", {
         id: {
           allowNull: false,
           primaryKey: true,
@@ -19,13 +19,13 @@ module.exports = (sequelize, DataTypes) => {
       {
         paranoid: true,
         underscored: true,
-        tableName: "recipientTypes",
+        tableName: "lists",
       }
     );
 
-    RecipientType.associate = (models) => {
-      RecipientType.hasMany(models.Recipient, { foreignKey: 'recipientTypeId' })
+    List.associate = (models) => {
+      List.belongsToMany(models.Recipient, { through: 'recipient_lists', foreignKey: 'listId', otherKey: 'recipientId' });
     }
     
-    return RecipientType;
+    return List;
 };  
